@@ -1,0 +1,5 @@
+server:
+  grpc_addr: "0.0.0.0:5080"
+  prometheus_addr: "0.0.0.0:5081"
+  machine_id: 10001
+  timeout: 10

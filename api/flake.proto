@@ -1,0 +1,18 @@
+syntax = "proto3";
+package flake;
+
+
+option go_package = "/flake";
+
+service FlakeService {
+  rpc New (NewRequest) returns (NewResponse);
+}
+
+message NewRequest {
+}
+
+message NewResponse {
+  uint64 code = 1;
+  string msg = 2;   // for error
+  uint64 data = 3;
+}
