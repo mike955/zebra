@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/mike955/zebra/internal/flake/data"
+	"github.com/mike955/zebra/flake/internal/data"
 	"github.com/sirupsen/logrus"
 
 	pb "github.com/mike955/zebra/api/flake"

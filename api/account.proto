@@ -1,0 +1,103 @@
+syntax = "proto3";
+package account;
+
+
+option go_package = "/account";
+
+service AccountService {
+  rpc Create (CreateRequest) returns (CreateResponse);
+  rpc Delete (DeleteRequest) returns (DeleteResponse);
+  rpc Deletes (DeletesRequest) returns (DeletesResponse);
+  rpc Update (UpdateRequest) returns (UpdateResponse);
+  rpc Get (GetRequest) returns (GetResponse);
+  rpc Gets (GetsRequest) returns (GetsResponse);
+}
+
+message CreateRequest {
+  string username = 1;
+  uint64 level = 2;
+  string qq = 3;
+  string wechat = 4;
+  string cellphone = 5;
+}
+
+message CreateResponse {
+  uint64 code = 1;
+  string msg = 2;   // for error
+  Account data = 3;
+}
+
+message DeleteRequest {
+  uint64 id = 1;
+}
+
+message DeleteResponse {
+  uint64 code = 1;
+  string msg = 2;   // for error
+  Account data = 3;
+}
+
+
+message DeletesRequest {
+  repeated uint64 ids = 1;
+}
+
+message DeletesResponse {
+  uint64 code = 1;
+  string msg = 2;   // for error
+  Account data = 3;
+}
+
+message UpdateRequest {
+  uint64 id = 1;
+  string username = 2;
+  uint64 level = 3;
+  string qq = 4;
+  string wechat = 5;
+  string cellphone = 6;
+}
+
+message UpdateResponse {
+  uint64 code = 1;
+  string msg = 2;   // for error
+  Account data = 3;
+}
+
+message GetRequest {
+  uint64 id = 1;
+  string username = 2;
+  uint64 level = 3;
+  string qq = 4;
+  string wechat = 5;
+  string cellphone = 6;
+}
+
+message GetResponse {
+  uint64 code = 1;
+  string msg = 2;   // for error
+  Account data = 3;
+}
+
+message GetsRequest {
+  repeated uint64 ids = 1;
+  string username = 2;
+  uint64 level = 3;
+  string qq = 4;
+  string wechat = 5;
+  string cellphone = 6;
+}
+
+message GetsResponse {
+  uint64 code = 1;
+  string msg = 2;   // for error
+  repeated Account data = 3;
+}
+
+message Account {
+  uint64 id = 1;
+  string username = 2;
+  uint64 level = 3;
+  string qq = 4;
+  string wechat = 5;
+  string cellphone = 6;
+}

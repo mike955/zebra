@@ -9,21 +9,15 @@ import (
 	"syscall"
 
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-	configs "github.com/mike955/zebra/configs/flake"
-	"github.com/mike955/zebra/internal/flake/data"
-	"github.com/mike955/zebra/internal/flake/service"
+	configs "github.com/mike955/zebra/account/configs"
+	"github.com/mike955/zebra/account/internal/dao"
+	"github.com/mike955/zebra/account/internal/service"
+	pb "github.com/mike955/zebra/api/account"
 	"github.com/mike955/zebra/pkg/transform/grpc"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc/reflection"
 	"gopkg.in/yaml.v2"
-
-	pb "github.com/mike955/zebra/api/flake"
 )
-
-// func _init(conf string) {
-// 	initConfig(conf)
-// 	// initRpcClient()
-// }
 
 func NewGRPCServer(conf string) (server *grpc.Server) {
 	// _init(conf)
@@ -36,8 +30,8 @@ func NewGRPCServer(conf string) (server *grpc.Server) {
 	}
 
 	server = grpc.NewServer(opts...)
-	s := service.NewFlakeService(server.Logger)
-	pb.RegisterFlakeServiceServer(server, s)
+	s := service.NewAccountService(server.Logger)
+	pb.RegisterAccountServiceServer(server, s)
 	reflection.Register(server.Server) // Register reflection service on gRPC server.
 	// grpc_prometheus.EnableHandlingTimeHistogram()
 	grpc_prometheus.Register(server.Server)
@@ -86,5 +80,6 @@ func InitConfig(conf string) {
 	if err := yaml.Unmarshal(confData, configs.GlobalConfig); err != nil {
 		panic("parse config file error: " + err.Error())
 	}
-	data.InitSf(configs.GlobalConfig.Server.MachineId)
+	// data.InitSf(configs.GlobalConfig.Server.MachineId)
+	dao.Init(configs.GlobalConfig.Mysql)
 }

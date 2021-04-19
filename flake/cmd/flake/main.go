@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/mike955/zebra/internal/flake/server"
+	"github.com/mike955/zebra/flake/internal/server"
 )
 
 var (
