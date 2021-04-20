@@ -13,8 +13,8 @@ import (
 var DB *gorm.DB
 
 type CommonTimeModel struct {
-	CreatedAt time.Time `json:"create_at"`
-	UpdatedAt time.Time `json:"update_at"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func Init(config configs.Mysql) {

@@ -1,30 +1,39 @@
 package dao
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Account struct {
 	CommonTimeModel
-	ID        uint64 `json:"id" gorm"index"`
-	Username  string `json:"username"`
-	level     uint64 `json:"level"`
-	qq        string `json:"qq"`
-	wechat    string `json:"wechat"`
-	cellphone string `json:"cellphone"`
-	IsDelete  uint64 `gorm:"default:0" json:"is_delete"`
+	Id            uint64 `json:"id" gorm"primaryKey"`
+	Username      string `json:"username"`
+	Level         uint64 `json:"level"`
+	QQ            string `json:"qq"`
+	Wechat        string `json:"wechat"`
+	Cellphone     string `json:"cellphone"`
+	Email         string `json:"email"`
+	State         uint64 `gorm:"default:0" json:"state"`
+	LastLoginTime string `json:"last_login_time"`
+	IsDeleted     uint64 `gorm:"default:0" json:"is_deleted"`
 }
 
 type AccountDao struct {
+	DB *gorm.DB
 }
 
 func NewAccountDao() *AccountDao {
-	return &AccountDao{}
+	return &AccountDao{
+		DB: DB,
+	}
 }
 
-func (dao AccountDao) Add(data map[string]interface{}) (err error) {
-	return nil
+func (dao *AccountDao) Create(data Account) (err error) {
+	err = DB.Create(&data).Error
+	return
 }
 
-func (dao AccountDao) FindByFields(fields map[string]interface{}) ([]*Account, error) {
+func (dao *AccountDao) FindByFields(fields map[string]interface{}) ([]*Account, error) {
 	var accounts []*Account
 	err := DB.Where(fields).Find(&accounts).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -33,14 +42,14 @@ func (dao AccountDao) FindByFields(fields map[string]interface{}) ([]*Account, e
 	return accounts, nil
 }
 
-func (dao AccountDao) DeleteByIds(ids []uint64) (err error) {
+func (dao *AccountDao) DeleteByIds(ids []uint64) (err error) {
 	if err := DB.Where(&map[string]interface{}{"id": ids}).Update("is_delete", 1).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (dao AccountDao) UpdateFields(where map[string]interface{}, updateFileds map[string]interface{}) (err error) {
+func (dao *AccountDao) UpdateFields(where map[string]interface{}, updateFileds map[string]interface{}) (err error) {
 	// err = DB.Where(&where).Update(updateFileds).Error
 	return
 }

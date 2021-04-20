@@ -24,6 +24,7 @@ type AccountServiceClient interface {
 	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateResponse, error)
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 	Gets(ctx context.Context, in *GetsRequest, opts ...grpc.CallOption) (*GetsResponse, error)
+	Auth(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*AuthResponse, error)
 }
 
 type accountServiceClient struct {
@@ -88,6 +89,15 @@ func (c *accountServiceClient) Gets(ctx context.Context, in *GetsRequest, opts .
 	return out, nil
 }
 
+func (c *accountServiceClient) Auth(ctx context.Context, in *AuthRequest, opts ...grpc.CallOption) (*AuthResponse, error) {
+	out := new(AuthResponse)
+	err := c.cc.Invoke(ctx, "/account.AccountService/Auth", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccountServiceServer is the server API for AccountService service.
 // All implementations must embed UnimplementedAccountServiceServer
 // for forward compatibility
@@ -98,6 +108,7 @@ type AccountServiceServer interface {
 	Update(context.Context, *UpdateRequest) (*UpdateResponse, error)
 	Get(context.Context, *GetRequest) (*GetResponse, error)
 	Gets(context.Context, *GetsRequest) (*GetsResponse, error)
+	Auth(context.Context, *AuthRequest) (*AuthResponse, error)
 	mustEmbedUnimplementedAccountServiceServer()
 }
 
@@ -122,6 +133,9 @@ func (UnimplementedAccountServiceServer) Get(context.Context, *GetRequest) (*Get
 }
 func (UnimplementedAccountServiceServer) Gets(context.Context, *GetsRequest) (*GetsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Gets not implemented")
+}
+func (UnimplementedAccountServiceServer) Auth(context.Context, *AuthRequest) (*AuthResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Auth not implemented")
 }
 func (UnimplementedAccountServiceServer) mustEmbedUnimplementedAccountServiceServer() {}
 
@@ -244,6 +258,24 @@ func _AccountService_Gets_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AccountService_Auth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountServiceServer).Auth(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/account.AccountService/Auth",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServiceServer).Auth(ctx, req.(*AuthRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AccountService_ServiceDesc is the grpc.ServiceDesc for AccountService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -274,6 +306,10 @@ var AccountService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Gets",
 			Handler:    _AccountService_Gets_Handler,
+		},
+		{
+			MethodName: "Auth",
+			Handler:    _AccountService_Auth_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

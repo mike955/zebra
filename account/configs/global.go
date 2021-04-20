@@ -1,4 +1,4 @@
-package account
+package configs
 
 import "time"
 
@@ -7,6 +7,7 @@ var GlobalConfig = &Global{}
 type Global struct {
 	Server server
 	Mysql  Mysql
+	Rpc    Rpc
 }
 
 type server struct {

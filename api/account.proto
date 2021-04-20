@@ -11,6 +11,7 @@ service AccountService {
   rpc Update (UpdateRequest) returns (UpdateResponse);
   rpc Get (GetRequest) returns (GetResponse);
   rpc Gets (GetsRequest) returns (GetsResponse);
+  rpc Auth (AuthRequest) returns (AuthResponse);
 }
 
 message CreateRequest {
@@ -19,6 +20,7 @@ message CreateRequest {
   string qq = 3;
   string wechat = 4;
   string cellphone = 5;
+  string email = 6;
 }
 
 message CreateResponse {
@@ -91,6 +93,17 @@ message GetsResponse {
   uint64 code = 1;
   string msg = 2;   // for error
   repeated Account data = 3;
+}
+
+message AuthRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message AuthResponse {
+  uint64 code = 1;
+  string msg = 2;   // for error
+  Account data = 3;
 }
 
 message Account {

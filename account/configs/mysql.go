@@ -1,4 +1,4 @@
-package account
+package configs
 
 type Mysql struct {
 	MysqlAddr     string `yaml:"mysql_addr"`
