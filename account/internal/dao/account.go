@@ -33,8 +33,8 @@ func (dao *AccountDao) Create(data Account) (err error) {
 	return
 }
 
-func (dao *AccountDao) FindByFields(fields map[string]interface{}) ([]*Account, error) {
-	var accounts []*Account
+func (dao *AccountDao) FindByFields(fields map[string]interface{}) ([]Account, error) {
+	var accounts []Account
 	err := DB.Where(fields).Find(&accounts).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return nil, err
@@ -43,7 +43,7 @@ func (dao *AccountDao) FindByFields(fields map[string]interface{}) ([]*Account, 
 }
 
 func (dao *AccountDao) DeleteByIds(ids []uint64) (err error) {
-	if err := DB.Where(&map[string]interface{}{"id": ids}).Update("is_delete", 1).Error; err != nil {
+	if err := DB.Where(&map[string]interface{}{"id": ids}).Update("is_deleted", 1).Error; err != nil {
 		return err
 	}
 	return nil

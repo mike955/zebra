@@ -57,6 +57,7 @@ message UpdateRequest {
   string qq = 4;
   string wechat = 5;
   string cellphone = 6;
+  string email = 7;
 }
 
 message UpdateResponse {
@@ -72,6 +73,7 @@ message GetRequest {
   string qq = 4;
   string wechat = 5;
   string cellphone = 6;
+  string email = 7;
 }
 
 message GetResponse {
@@ -87,6 +89,7 @@ message GetsRequest {
   string qq = 4;
   string wechat = 5;
   string cellphone = 6;
+  string email = 7;
 }
 
 message GetsResponse {
@@ -113,4 +116,5 @@ message Account {
   string qq = 4;
   string wechat = 5;
   string cellphone = 6;
+  string email = 7;
 }

@@ -63,3 +63,48 @@ func (s *AccountData) Create(ctx context.Context, params *CreateRequest) (err er
 	}
 	return
 }
+
+func (s *AccountData) Deletes(ctx context.Context, params *DeletesRequest) (err error) {
+	// 1.check params
+	var accounts []dao.Account
+	var fields map[string]interface{}
+	fields["id"] = params.Ids
+	fields["is_deleted"] = 1
+	accounts, err = s.dao.FindByFields(fields)
+	if err != nil {
+		return
+	}
+	if len(accounts) != len(params.Ids) {
+		return errors.New("accounts can not found")
+	}
+
+	// 2. delete accounts
+	err = s.dao.DeleteByIds(params.Ids)
+	return
+}
+
+func (s *AccountData) Gets(ctx context.Context, params *GetsRequest) (accounts []dao.Account, err error) {
+	var fields map[string]interface{}
+	fields["id"] = params.Ids
+	query := s.dao.DB.Where("name IN ?", params.Ids)
+	if params.Level != 0 {
+		query.Where("level = ?", params.Level)
+	}
+	if params.Username != "" {
+		query.Where("username LIKE ?", params.Username)
+	}
+	if params.QQ != "" {
+		query.Where("qq = ?", params.QQ)
+	}
+	if params.Wechat != "" {
+		query.Where("wechat = ?", params.Wechat)
+	}
+	if params.Cellphone != "" {
+		query.Where("cellphone = ?", params.Cellphone)
+	}
+	if params.Email != "" {
+		query.Where("level = ?", params.Email)
+	}
+	err = query.Find(&accounts).Error
+	return
+}
