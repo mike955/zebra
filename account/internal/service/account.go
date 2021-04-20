@@ -27,6 +27,7 @@ func (s *AccountService) Create(ctx context.Context, req *pb.CreateRequest) (res
 	response = new(pb.CreateResponse)
 	err = s.data.Create(ctx, &data.CreateRequest{
 		Username:  req.Username,
+		Password:  req.Password,
 		Level:     req.Level,
 		QQ:        req.Qq,
 		Wechat:    req.Wechat,

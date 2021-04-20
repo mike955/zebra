@@ -2,7 +2,9 @@ drop TABLE if exists `accounts`;
 CREATE TABLE `accounts` (
   `id` bigint(32) unsigned NOT NULL AUTO_INCREMENT COMMENT 'id',
   `username` varchar(512) not NULL COMMENT '用户名',
-  `level` tinyint(32) not NULL COMMENT '用户等级,0:普通',
+  `password` binary(64) NOT NULL COMMENT "密码",
+  `salt` binary(64) NOT NULL COMMENT "盐",
+  `level` tinyint(64) not NULL COMMENT '用户等级,0:普通',
   `qq` varchar(32) DEFAULT 0 COMMENT 'qq 号',
   `wechat` varchar(32) DEFAULT NULL COMMENT '微信号',
   `cellphone` varchar(32) DEFAULT NULL COMMENT '手机号',

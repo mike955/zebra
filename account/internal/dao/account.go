@@ -8,6 +8,8 @@ type Account struct {
 	CommonTimeModel
 	Id            uint64 `json:"id" gorm"primaryKey"`
 	Username      string `json:"username"`
+	Password      string `json:"password`
+	Salt          string `json:"salt`
 	Level         uint64 `json:"level"`
 	QQ            string `json:"qq"`
 	Wechat        string `json:"wechat"`

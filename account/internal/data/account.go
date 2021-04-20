@@ -5,6 +5,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/mike955/zebra/pkg/ecrypto"
+
 	"github.com/mike955/zebra/account/internal/dao"
 	"github.com/mike955/zebra/account/internal/rpc"
 	flake_pb "github.com/mike955/zebra/api/flake"
@@ -55,6 +57,9 @@ func (s *AccountData) Create(ctx context.Context, params *CreateRequest) (err er
 	account.Cellphone = params.Cellphone
 	account.Email = params.Email
 	account.LastLoginTime = time.Now().Format("2006-01-02 15:04:05")
+
+	account.Salt = ecrypto.GenerateRandomHex(64)
+	account.Password = ecrypto.GeneratePassword(params.Password, account.Salt)
 
 	err = s.dao.Create(account)
 	if err != nil {

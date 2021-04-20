@@ -2,6 +2,7 @@ package data
 
 type CreateRequest struct {
 	Username  string
+	Password  string
 	Level     uint64
 	QQ        string
 	Wechat    string
