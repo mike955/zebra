@@ -3,6 +3,8 @@ module github.com/mike955/zebra
 go 1.14
 
 require (
+	github.com/google/uuid v1.1.2
+	github.com/gorilla/mux v1.7.3
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/prometheus/client_golang v1.10.0
 	github.com/sirupsen/logrus v1.8.1

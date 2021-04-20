@@ -1,0 +1,7 @@
+server:
+  grpc_addr: "192.168.187.61:5080"
+  timeout: 10
+redis:
+  redis_addr: 10.175.19.244:63790
+  redis_password:
+  redis_default_expire: 10

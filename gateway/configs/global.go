@@ -6,6 +6,7 @@ var GlobalConfig = &Global{}
 
 type Global struct {
 	Server server
+	Redis  Redis
 }
 
 type server struct {
