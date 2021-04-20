@@ -27,7 +27,6 @@ func NewAccountData(logger *logrus.Logger) *AccountData {
 }
 
 func (s *AccountData) Create(ctx context.Context, params *CreateRequest) (err error) {
-	// 1.check username、cellphone、email
 	var account dao.Account
 	s.dao.DB.Where("username=?", params.Username).Or("cellphone=?", params.Cellphone).Or("email=?", params.Email).Find(&account)
 	if account.Username == params.Username {
@@ -40,15 +39,12 @@ func (s *AccountData) Create(ctx context.Context, params *CreateRequest) (err er
 		return errors.New("email has been exist")
 	}
 
-	// 2.get id from flake
 	res, err := rpc.FlakeRpc().New(ctx, &flake_pb.NewRequest{})
 	if err != nil || res.Data == 0 {
 		s.logger.Errorf("app:account|service:account|layer:data|func:create|info:call falke.New error|params:%+v|error:%s", params, err.Error())
 		return errors.New("create id error")
 	}
 
-	// 3.create user
-	// account
 	account.Id = res.Data
 	account.Username = params.Username
 	account.Level = params.Level
@@ -70,7 +66,6 @@ func (s *AccountData) Create(ctx context.Context, params *CreateRequest) (err er
 }
 
 func (s *AccountData) Deletes(ctx context.Context, params *DeletesRequest) (err error) {
-	// 1.check params
 	var accounts []dao.Account
 	var fields map[string]interface{}
 	fields["id"] = params.Ids
@@ -83,14 +78,11 @@ func (s *AccountData) Deletes(ctx context.Context, params *DeletesRequest) (err 
 		return errors.New("accounts can not found")
 	}
 
-	// 2. delete accounts
 	err = s.dao.DeleteByIds(params.Ids)
 	return
 }
 
 func (s *AccountData) Gets(ctx context.Context, params *GetsRequest) (accounts []dao.Account, err error) {
-	var fields map[string]interface{}
-	fields["id"] = params.Ids
 	query := s.dao.DB.Where("name IN ?", params.Ids)
 	if params.Level != 0 {
 		query.Where("level = ?", params.Level)
@@ -111,5 +103,23 @@ func (s *AccountData) Gets(ctx context.Context, params *GetsRequest) (accounts [
 		query.Where("level = ?", params.Email)
 	}
 	err = query.Find(&accounts).Error
+	return
+}
+
+func (s *AccountData) Auth(ctx context.Context, params *AuthRequest) (account dao.Account, err error) {
+	var fields = make(map[string]interface{})
+	fields["username"] = params.Username
+	accounts, err := s.dao.FindByFields(fields)
+	if err != nil {
+		return
+	}
+	if len(accounts) != 1 {
+		err = errors.New("can not found account")
+		return
+	}
+	account = accounts[0]
+	if account.Password != ecrypto.GeneratePassword(params.Password, account.Salt) {
+		err = errors.New("password error")
+	}
 	return
 }

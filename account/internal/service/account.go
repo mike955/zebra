@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/mike955/zebra/account/internal/data"
 	pb "github.com/mike955/zebra/api/account"
@@ -36,7 +35,7 @@ func (s *AccountService) Create(ctx context.Context, req *pb.CreateRequest) (res
 	})
 	if err != nil {
 		s.logger.Errorf("app:account|service:account|layer:service|func:create|info:create account error|params:%+v|error:%s", req, err.Error())
-		err = errors.New("create account error")
+		response.Msg = "create account error"
 	}
 	return
 }
@@ -48,7 +47,7 @@ func (s *AccountService) Delete(ctx context.Context, req *pb.DeleteRequest) (res
 	})
 	if err != nil {
 		s.logger.Errorf("app:account|service:account|layer:service|func:delete|info:delete account error|params:%+v|error:%s", req, err.Error())
-		err = errors.New("delete account error")
+		response.Msg = "delete account error"
 	}
 	return
 }
@@ -60,7 +59,7 @@ func (s *AccountService) Deletes(ctx context.Context, req *pb.DeletesRequest) (r
 	})
 	if err != nil {
 		s.logger.Errorf("app:account|service:account|layer:service|func:deletes|info:delete accounts error|params:%+v|error:%s", req, err.Error())
-		err = errors.New("delete account error")
+		response.Msg = "delete account error"
 	}
 	return
 }
@@ -98,7 +97,8 @@ func (s *AccountService) Get(ctx context.Context, req *pb.GetRequest) (response 
 	accounts, err := s.data.Gets(ctx, params)
 	if err != nil {
 		s.logger.Errorf("app:account|service:account|layer:service|func:gets|info:gets accounts error|params:%+v|error:%s", req, err.Error())
-		err = errors.New("delete account error")
+		response.Msg = "delete account error"
+		return
 	}
 	response.Data = &pb.Account{
 		Id:        accounts[0].Id,
@@ -141,7 +141,8 @@ func (s *AccountService) Gets(ctx context.Context, req *pb.GetsRequest) (respons
 	accounts, err := s.data.Gets(ctx, params)
 	if err != nil {
 		s.logger.Errorf("app:account|service:account|layer:service|func:gets|info:gets accounts error|params:%+v|error:%s", req, err.Error())
-		err = errors.New("delete account error")
+		response.Msg = "delete account error"
+		return
 	}
 	var acc []*pb.Account
 	for _, a := range accounts {
@@ -162,5 +163,23 @@ func (s *AccountService) Gets(ctx context.Context, req *pb.GetsRequest) (respons
 
 func (s *AccountService) Auth(ctx context.Context, req *pb.AuthRequest) (response *pb.AuthResponse, err error) {
 	response = new(pb.AuthResponse)
+	account, err := s.data.Auth(ctx, &data.AuthRequest{
+		Username: req.Username,
+		Password: req.Password,
+	})
+	if err != nil {
+		s.logger.Errorf("app:account|service:account|layer:service|func:auth|info:auth accounts error|params:%+v|error:%s", req, err.Error())
+		response.Msg = "auth account error"
+		return
+	}
+	response.Data = &pb.Account{
+		Id:        account.Id,
+		Username:  account.Username,
+		Level:     account.Level,
+		Qq:        account.QQ,
+		Wechat:    account.Wechat,
+		Cellphone: account.Cellphone,
+		Email:     account.Email,
+	}
 	return
 }
