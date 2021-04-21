@@ -16,6 +16,7 @@ import (
 type AccountData struct {
 	logger *logrus.Logger
 	dao    *dao.AccountDao
+	rpc    *rpc.Rpc
 }
 
 // data handle logic
@@ -23,6 +24,7 @@ func NewAccountData(logger *logrus.Logger) *AccountData {
 	return &AccountData{
 		logger: logger,
 		dao:    dao.NewAccountDao(),
+		rpc:    rpc.NewRpc(),
 	}
 }
 
@@ -39,7 +41,7 @@ func (s *AccountData) Create(ctx context.Context, params *CreateRequest) (err er
 		return errors.New("email has been exist")
 	}
 
-	res, err := rpc.FlakeRpc().New(ctx, &flake_pb.NewRequest{})
+	res, err := s.rpc.Flake.New(ctx, &flake_pb.NewRequest{})
 	if err != nil || res.Data == 0 {
 		s.logger.Errorf("app:account|service:account|layer:data|func:create|info:call falke.New error|params:%+v|error:%s", params, err.Error())
 		return errors.New("create id error")

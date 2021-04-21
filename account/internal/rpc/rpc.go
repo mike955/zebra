@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/mike955/zebra/account/configs"
-	account_pb "github.com/mike955/zebra/api/account"
 	flake_pb "github.com/mike955/zebra/api/flake"
 	"google.golang.org/grpc"
 )
@@ -13,11 +12,16 @@ import (
 var _gRPCClientMap = map[string]interface{}{}
 
 type Rpc struct {
-	Account *account_pb.AccountServiceClient
-	Flake   *flake_pb.FlakeServiceClient
+	Flake flake_pb.FlakeServiceClient
 }
 
-func FlakeRpc() flake_pb.FlakeServiceClient {
+func NewRpc() *Rpc {
+	return &Rpc{
+		Flake: flakeRpc(),
+	}
+}
+
+func flakeRpc() flake_pb.FlakeServiceClient {
 	if _gRPCClientMap["flake"] == nil {
 
 		var ctx = context.Background()
