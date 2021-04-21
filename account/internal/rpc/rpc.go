@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/mike955/zebra/account/configs"
+	age_pb "github.com/mike955/zebra/api/age"
 	flake_pb "github.com/mike955/zebra/api/flake"
 	"google.golang.org/grpc"
 )
@@ -13,11 +14,13 @@ var _gRPCClientMap = map[string]interface{}{}
 
 type Rpc struct {
 	Flake flake_pb.FlakeServiceClient
+	Age   age_pb.AgeServiceClient
 }
 
 func NewRpc() *Rpc {
 	return &Rpc{
 		Flake: flakeRpc(),
+		Age:   ageRpc(),
 	}
 }
 
@@ -34,4 +37,19 @@ func flakeRpc() flake_pb.FlakeServiceClient {
 		_gRPCClientMap["flake"] = client
 	}
 	return _gRPCClientMap["flake"].(flake_pb.FlakeServiceClient)
+}
+
+func ageRpc() age_pb.AgeServiceClient {
+	if _gRPCClientMap["age"] == nil {
+
+		var ctx = context.Background()
+		ageAddr := configs.GlobalConfig.Rpc.AgeAddr
+		conn, err := grpc.DialContext(ctx, ageAddr, grpc.WithInsecure())
+		if err != nil {
+			log.Fatalf("user grpc client did not connect: %v", err)
+		}
+		client := age_pb.NewAgeServiceClient(conn)
+		_gRPCClientMap["age"] = client
+	}
+	return _gRPCClientMap["age"].(age_pb.AgeServiceClient)
 }

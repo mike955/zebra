@@ -8,6 +8,7 @@ type CreateRequest struct {
 	Wechat    string
 	Cellphone string
 	Email     string
+	Age       uint64
 }
 
 type DeletesRequest struct {
@@ -26,6 +27,7 @@ type GetsRequest struct {
 	Wechat    string
 	Cellphone string
 	Email     string
+	Age       uint64
 }
 
 type AuthRequest struct {

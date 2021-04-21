@@ -1,7 +1,9 @@
-drop TABLE if exists `zebra.accounts`;
-CREATE TABLE `zebra.accounts` (
+drop TABLE if exists `zebra`.`accounts`;
+CREATE TABLE `zebra`.`accounts` (
   `id` bigint(32) unsigned NOT NULL AUTO_INCREMENT COMMENT 'id',
   `username` varchar(512) not NULL COMMENT '用户名',
+  `age` int(32) NOT NULL COMMENT "年龄",
+  `age_id` bigint(32) NOT NULL COMMENT "age id",
   `password` binary(64) NOT NULL COMMENT "密码",
   `salt` binary(64) NOT NULL COMMENT "盐",
   `level` tinyint(64) not NULL COMMENT '用户等级,0:普通',

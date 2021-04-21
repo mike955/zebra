@@ -9,6 +9,7 @@ import (
 
 	"github.com/mike955/zebra/account/internal/dao"
 	"github.com/mike955/zebra/account/internal/rpc"
+	age_pb "github.com/mike955/zebra/api/age"
 	flake_pb "github.com/mike955/zebra/api/flake"
 	"github.com/sirupsen/logrus"
 )
@@ -41,14 +42,22 @@ func (s *AccountData) Create(ctx context.Context, params *CreateRequest) (err er
 		return errors.New("email has been exist")
 	}
 
-	res, err := s.rpc.Flake.New(ctx, &flake_pb.NewRequest{})
-	if err != nil || res.Data == 0 {
-		s.logger.Errorf("app:account|service:account|layer:data|func:create|info:call falke.New error|params:%+v|error:%s", params, err.Error())
+	flakeRes, err := s.rpc.Flake.New(ctx, &flake_pb.NewRequest{})
+	if err != nil || flakeRes.Data == 0 {
+		s.logger.Errorf("app:account|data:account|func:create|info:call falke.New error|params:%+v|error:%s", params, err.Error())
 		return errors.New("create id error")
 	}
 
-	account.Id = res.Data
+	ageRes, err := s.rpc.Age.Get(ctx, &age_pb.GetRequest{Age: params.Age})
+	if err != nil {
+		s.logger.Errorf("app:account|data:account|func:create|info:call age.Get error|params:%+v|error:%s", params, err.Error())
+		return errors.New("get age id error")
+	}
+
+	account.Id = flakeRes.Data
 	account.Username = params.Username
+	account.Age = params.Age
+	account.AgeId = ageRes.Data.Id
 	account.Level = params.Level
 	account.QQ = params.QQ
 	account.Wechat = params.Wechat
@@ -91,6 +100,9 @@ func (s *AccountData) Gets(ctx context.Context, params *GetsRequest) (accounts [
 	}
 	if params.Username != "" {
 		query.Where("username LIKE ?", params.Username)
+	}
+	if params.Age != 0 {
+		query.Where("age = ?", params.Age)
 	}
 	if params.QQ != "" {
 		query.Where("qq = ?", params.QQ)

@@ -32,6 +32,7 @@ func (s *AccountService) Create(ctx context.Context, req *pb.CreateRequest) (res
 		Wechat:    req.Wechat,
 		Cellphone: req.Cellphone,
 		Email:     req.Email,
+		Age:       req.Age,
 	})
 	if err != nil {
 		s.logger.Errorf("app:account|service:account|layer:service|func:create|info:create account error|params:%+v|error:%s", req, err.Error())
@@ -79,6 +80,9 @@ func (s *AccountService) Get(ctx context.Context, req *pb.GetRequest) (response 
 	if req.Username != "" {
 		params.Username = req.Username
 	}
+	if req.Age != 0 {
+		params.Age = req.Age
+	}
 	if req.Level != 0 {
 		params.Level = req.Level
 	}
@@ -123,6 +127,9 @@ func (s *AccountService) Gets(ctx context.Context, req *pb.GetsRequest) (respons
 	if req.Username != "" {
 		params.Username = req.Username
 	}
+	if req.Age != 0 {
+		params.Age = req.Age
+	}
 	if req.Level != 0 {
 		params.Level = req.Level
 	}
@@ -154,6 +161,7 @@ func (s *AccountService) Gets(ctx context.Context, req *pb.GetsRequest) (respons
 			Wechat:    a.Wechat,
 			Cellphone: a.Cellphone,
 			Email:     a.Email,
+			Age:       a.Age,
 		}
 		acc = append(acc, account)
 	}
@@ -180,6 +188,7 @@ func (s *AccountService) Auth(ctx context.Context, req *pb.AuthRequest) (respons
 		Wechat:    account.Wechat,
 		Cellphone: account.Cellphone,
 		Email:     account.Email,
+		Age:       account.Age,
 	}
 	return
 }

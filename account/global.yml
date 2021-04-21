@@ -10,3 +10,4 @@ mysql:
   mysql_database: "zebra"
 rpc:
   flake_addr: "0.0.0.0:5080"
+  age_addr: "0.0.0.0:5380"
