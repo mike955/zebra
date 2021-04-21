@@ -1,0 +1,35 @@
+syntax = "proto3";
+package age;
+
+
+option go_package = "/age";
+
+service AgeService {
+  rpc Create (CreateRequest) returns (CreateResponse);
+  rpc Get (GetRequest) returns (GetResponse);
+}
+
+message CreateRequest {
+  uint64 age = 1;
+}
+
+message CreateResponse {
+  uint64 code = 1;
+  string msg = 2;   // for error
+  string data = 3;
+}
+
+message GetRequest {
+  uint64 age = 1;
+}
+
+message GetResponse {
+  uint64 code = 1;
+  string msg = 2;   // for error
+  Age data = 3;
+}
+
+message Age {
+  uint64 id = 1;
+  uint64 age = 2;
+}

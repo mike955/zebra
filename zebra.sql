@@ -1,5 +1,5 @@
-drop TABLE if exists `accounts`;
-CREATE TABLE `accounts` (
+drop TABLE if exists `zebra.accounts`;
+CREATE TABLE `zebra.accounts` (
   `id` bigint(32) unsigned NOT NULL AUTO_INCREMENT COMMENT 'id',
   `username` varchar(512) not NULL COMMENT '用户名',
   `password` binary(64) NOT NULL COMMENT "密码",
@@ -16,3 +16,14 @@ CREATE TABLE `accounts` (
   `updated_at` datetime NOT NULL COMMENT '最后更新时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='账号表';
+
+DROP TABLE IF EXISTS `zebra`.`ages`;
+CREATE TABLE `zebra`.`ages` (
+    `id` bigint(32) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键id',
+    `age` int(32) NOT NULL COMMENT '类别',
+    `is_deleted` TINYINT(4) NOT NULL DEFAULT 0 COMMENT '删除标志,0:正常,1:删除',
+    `created_at` DATETIME NOT NULL COMMENT '创建时间',
+    `updated_at` DATETIME NOT NULL COMMENT '最后更新时间',
+    PRIMARY KEY (`id`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='年龄表';
+
