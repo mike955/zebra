@@ -1,0 +1,24 @@
+syntax = "proto3";
+package email;
+
+
+option go_package = "/email";
+
+service EmailService {
+  rpc Get (GetRequest) returns (GetResponse);
+}
+
+message GetRequest {
+  string email = 1;
+}
+
+message GetResponse {
+  uint64 code = 1;
+  string msg = 2;   // for error
+  Email data = 3;  // email
+}
+
+message Email {
+  uint64 id = 1;
+  string email = 2;
+}
