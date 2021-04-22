@@ -15,7 +15,8 @@ CREATE TABLE `zebra`.`accounts` (
   `is_deleted` tinyint(4) DEFAULT 0 COMMENT '是否删除,0:未删除,1:删除',
   `created_at` datetime NOT NULL COMMENT '创建时间',
   `updated_at` datetime NOT NULL COMMENT '最后更新时间',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='账号表';
 
 DROP TABLE IF EXISTS `zebra`.`ages`;
@@ -25,7 +26,8 @@ CREATE TABLE `zebra`.`ages` (
   `is_deleted` TINYINT(4) NOT NULL DEFAULT 0 COMMENT '删除标志,0:正常,1:删除',
   `created_at` DATETIME NOT NULL COMMENT '创建时间',
   `updated_at` DATETIME NOT NULL COMMENT '最后更新时间',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_idx_age` (`age`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='年龄表';
 
 DROP TABLE IF EXISTS `zebra`.`emails`;
@@ -35,7 +37,8 @@ CREATE TABLE `zebra`.`emails` (
   `is_deleted` TINYINT(4) NOT NULL DEFAULT 0 COMMENT '删除标志,0:正常,1:删除',
   `created_at` DATETIME NOT NULL COMMENT '创建时间',
   `updated_at` DATETIME NOT NULL COMMENT '最后更新时间',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_idx_email` (`email`(32))
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='邮箱表';
 
 DROP TABLE IF EXISTS `zebra`.`banks`;
@@ -45,7 +48,8 @@ CREATE TABLE `zebra`.`banks` (
   `is_deleted` TINYINT(4) NOT NULL DEFAULT 0 COMMENT '删除标志,0:正常,1:删除',
   `created_at` DATETIME NOT NULL COMMENT '创建时间',
   `updated_at` DATETIME NOT NULL COMMENT '最后更新时间',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_idx_bank` (`bank`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='银行账户表';
 
 DROP TABLE IF EXISTS `zebra`.`cellphones`;
@@ -55,5 +59,6 @@ CREATE TABLE `zebra`.`cellphones` (
   `is_deleted` TINYINT(4) NOT NULL DEFAULT 0 COMMENT '删除标志,0:正常,1:删除',
   `created_at` DATETIME NOT NULL COMMENT '创建时间',
   `updated_at` DATETIME NOT NULL COMMENT '最后更新时间',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_idx_cellphone` (`cellphone`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='手机号表';

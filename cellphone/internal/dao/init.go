@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	configs "github.com/mike955/zebra/age/configs"
+	configs "github.com/mike955/zebra/cellphone/configs"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

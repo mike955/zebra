@@ -1,24 +1,24 @@
 syntax = "proto3";
-package age;
+package cellphone;
 
 
-option go_package = "/age";
+option go_package = "/cellphone";
 
-service AgeService {
+service CellphoneService {
   rpc Get (GetRequest) returns (GetResponse);
 }
 
 message GetRequest {
-  uint64 age = 1;
+  uint64 cellphone = 1;
 }
 
 message GetResponse {
   uint64 code = 1;
   string msg = 2;   // for error
-  Age data = 3;
+  Cellphone data = 3;
 }
 
-message Age {
+message Cellphone {
   uint64 id = 1;
-  uint64 age = 2;
+  uint64 cellphone = 2;
 }

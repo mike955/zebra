@@ -3,6 +3,7 @@ package ecrypto
 import (
 	"crypto/md5"
 	"crypto/sha512"
+	"encoding/binary"
 	"encoding/hex"
 	"math/rand"
 )
@@ -31,6 +32,12 @@ func GenerateRandomHex(n int) string {
 		return "6b0d767330ea1b312e65a4965db85ae1" // n = 16
 	}
 	return string(bytes[:])
+}
+
+func GenerateRandomUint64() uint64 {
+	buf := make([]byte, 8)
+	rand.Read(buf) // Always succeeds, no need to check error
+	return binary.LittleEndian.Uint64(buf)
 }
 
 func GeneratePassword(password string, salt string) string {

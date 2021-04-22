@@ -18,7 +18,6 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AgeServiceClient interface {
-	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error)
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error)
 }
 
@@ -28,15 +27,6 @@ type ageServiceClient struct {
 
 func NewAgeServiceClient(cc grpc.ClientConnInterface) AgeServiceClient {
 	return &ageServiceClient{cc}
-}
-
-func (c *ageServiceClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateResponse, error) {
-	out := new(CreateResponse)
-	err := c.cc.Invoke(ctx, "/age.AgeService/Create", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *ageServiceClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*GetResponse, error) {
@@ -52,7 +42,6 @@ func (c *ageServiceClient) Get(ctx context.Context, in *GetRequest, opts ...grpc
 // All implementations must embed UnimplementedAgeServiceServer
 // for forward compatibility
 type AgeServiceServer interface {
-	Create(context.Context, *CreateRequest) (*CreateResponse, error)
 	Get(context.Context, *GetRequest) (*GetResponse, error)
 	mustEmbedUnimplementedAgeServiceServer()
 }
@@ -61,9 +50,6 @@ type AgeServiceServer interface {
 type UnimplementedAgeServiceServer struct {
 }
 
-func (UnimplementedAgeServiceServer) Create(context.Context, *CreateRequest) (*CreateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
-}
 func (UnimplementedAgeServiceServer) Get(context.Context, *GetRequest) (*GetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
@@ -78,24 +64,6 @@ type UnsafeAgeServiceServer interface {
 
 func RegisterAgeServiceServer(s grpc.ServiceRegistrar, srv AgeServiceServer) {
 	s.RegisterService(&AgeService_ServiceDesc, srv)
-}
-
-func _AgeService_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AgeServiceServer).Create(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/age.AgeService/Create",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AgeServiceServer).Create(ctx, req.(*CreateRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _AgeService_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -123,10 +91,6 @@ var AgeService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "age.AgeService",
 	HandlerType: (*AgeServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Create",
-			Handler:    _AgeService_Create_Handler,
-		},
 		{
 			MethodName: "Get",
 			Handler:    _AgeService_Get_Handler,
