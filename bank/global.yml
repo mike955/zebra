@@ -1,0 +1,11 @@
+server:
+  grpc_addr: "0.0.0.0:5580"
+  prometheus_addr: "0.0.0.0:5581"
+  timeout: 10
+mysql:
+  mysql_addr: "10.175.19.241:3306"
+  mysql_username: "root"
+  mysql_password: "@Ussg3306"
+  mysql_database: "zebra"
+rpc:
+  flake_addr: "0.0.0.0:5180"
