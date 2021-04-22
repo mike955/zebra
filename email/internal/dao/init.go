@@ -24,7 +24,7 @@ func Init(config configs.Mysql) {
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", username, password, addr, database)
 	DB, err = gorm.Open(mysql.Open(dsn))
-
+	DB = DB.Debug()
 	if err != nil {
 		panic("connect mysql error: " + err.Error())
 	}

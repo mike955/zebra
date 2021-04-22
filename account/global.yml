@@ -9,5 +9,5 @@ mysql:
   mysql_password: "@Ussg3306"
   mysql_database: "zebra"
 rpc:
-  flake_addr: "0.0.0.0:5080"
+  flake_addr: "0.0.0.0:5180"
   age_addr: "0.0.0.0:5380"
