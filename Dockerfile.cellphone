@@ -1,0 +1,22 @@
+# build
+FROM hub.ucloudadmin.com/public/golang:1.14.2 AS builder
+WORKDIR /go/src/github.com/mike955/zebra
+COPY . .
+RUN GOOS=linux GOARCH=amd64 go build -o cellphone_linux /go/src/github.com/mike955/zebra/cellphone/cmd/cellphone/main.go 
+
+
+# runtime
+FROM alpine:3.12.1
+
+#this seems dumb, but the libc from the build stage is not the same as the alpine libc
+#create a symlink to where it expects it since they are compatable. https://stackoverflow.com/a/35613430/3105368
+RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
+
+WORKDIR /root/
+COPY --from=builder /go/src/github.com/mike955/zebra/cellphone_linux /root/
+COPY cellphone/global.yml /root/global.yml
+COPY grpc_health_probe /usr/local/bin/
+EXPOSE 5680
+EXPOSE 5681
+
+ENTRYPOINT [ "/root/cellphone_linux", "-f", "/root/global.yml" ]

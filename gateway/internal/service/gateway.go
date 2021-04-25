@@ -28,7 +28,8 @@ func (gate *Gateway) Action() {
 		plugin := gate.plugins[i]
 		err := plugin.Handler()
 		if err != nil {
-
+			gate.ctx.Response.Write([]byte(err.Error()))
+			break
 		}
 	}
 }

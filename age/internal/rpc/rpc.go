@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	"log"
+	"os"
 
 	"github.com/mike955/zebra/age/configs"
 	flake_pb "github.com/mike955/zebra/api/flake"
@@ -26,6 +27,9 @@ func flakeRpc() flake_pb.FlakeServiceClient {
 
 		var ctx = context.Background()
 		flakeAddr := configs.GlobalConfig.Rpc.FlakeAddr
+		if os.Getenv("FlAKE_ADDR") != "" {
+			flakeAddr = os.Getenv("FlAKE_ADDR")
+		}
 		conn, err := grpc.DialContext(ctx, flakeAddr, grpc.WithInsecure())
 		if err != nil {
 			log.Fatalf("user grpc client did not connect: %v", err)

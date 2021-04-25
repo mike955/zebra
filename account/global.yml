@@ -1,13 +1,17 @@
 server:
-  grpc_addr: "0.0.0.0:5180"
-  prometheus_addr: "0.0.0.0:5181"
+  grpc_addr: "0.0.0.0:5280"
+  prometheus_addr: "0.0.0.0:5281"
   machine_id: 10002
-  timeout: 10
+  timeout: 10000000
 mysql:
-  mysql_addr: "10.175.19.241:3306"
+  mysql_addr: "10.175.7.193:3306"
   mysql_username: "root"
   mysql_password: "@Ussg3306"
   mysql_database: "zebra"
 rpc:
-  flake_addr: "0.0.0.0:5180"
+  # flake_addr: "0.0.0.0:5180"
+  flake_addr: ${FLAKE_ADDR}
   age_addr: "0.0.0.0:5380"
+  email_addr: "0.0.0.0:5480"
+  bank_addr: "0.0.0.0:5580"
+  cellphone_addr: "0.0.0.0:5680"

@@ -63,10 +63,8 @@ func GrpcOpts(opts ...grpc.ServerOption) ServerOption {
 	}
 }
 
-func GrpcHealthCheck() ServerOption {
-	return func(s *Server) {
-		grpc_health_v1.RegisterHealthServer(s, health.NewServer())
-	}
+func GrpcHealthCheck(s *grpc.Server) {
+	grpc_health_v1.RegisterHealthServer(s, health.NewServer())
 }
 
 func GrpcKeepAlive(kp keepalive.ServerParameters) ServerOption {

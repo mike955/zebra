@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mike-zebra-bank
+  namespace: prj-mike-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mike-zebra-bank
+  template:
+    metadata:
+      labels:
+        app: mike-zebra-bank
+    spec:
+      containers:
+      - name: mike-zebra-bank
+        image: hub.ucloudadmin.com/mike/bank:0.0.1
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 5580
+          - containerPort: 5581
+        env:
+          - name: MYSQL_ADDR
+            value: "[2002:ac14:fecd:1:0:ff:aaf:7c1]:3306"
+          - name: MYSQL_USERNAME
+            value: "root"
+          - name: MYSQL_PASSWORD
+            value: "@Ussg3306"
+          - name: MYSQL_DATABASE
+            value: "zebra"
+          - name: FlAKE_ADDR
+            value: "mike-zebra-flake"
+        readinessProbe:
+          exec:
+            command: ["/usr/local/bin/grpc_health_probe", "-addr=:5580"]
+          initialDelaySeconds: 5
+        livenessProbe:
+          exec:
+            command: ["/usr/local/bin/grpc_health_probe", "-addr=:5580"]
+          initialDelaySeconds: 10
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "512Mi"
+          limits:
+            cpu: "2000m"
+            memory: "4096Mi"

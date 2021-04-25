@@ -39,8 +39,9 @@ func NewGRPCServer(conf string) (server *grpc.Server) {
 	s := service.NewAgeService(server.Logger)
 	pb.RegisterAgeServiceServer(server, s)
 	reflection.Register(server.Server) // Register reflection service on gRPC server.
-	// grpc_prometheus.EnableHandlingTimeHistogram()
+	grpc_prometheus.EnableHandlingTimeHistogram()
 	grpc_prometheus.Register(server.Server)
+	grpc.GrpcHealthCheck(server.Server)
 	return
 }
 

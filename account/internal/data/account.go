@@ -3,13 +3,18 @@ package data
 import (
 	"context"
 	"errors"
-	"time"
+	"sync"
 
 	"github.com/mike955/zebra/pkg/ecrypto"
 
 	"github.com/mike955/zebra/account/internal/dao"
 	"github.com/mike955/zebra/account/internal/rpc"
+
 	age_pb "github.com/mike955/zebra/api/age"
+
+	bank_pb "github.com/mike955/zebra/api/bank"
+	cellphone_pb "github.com/mike955/zebra/api/cellphone"
+	email_pb "github.com/mike955/zebra/api/email"
 	flake_pb "github.com/mike955/zebra/api/flake"
 	"github.com/sirupsen/logrus"
 )
@@ -29,95 +34,146 @@ func NewAccountData(logger *logrus.Logger) *AccountData {
 	}
 }
 
-func (s *AccountData) Create(ctx context.Context, params *CreateRequest) (err error) {
-	var account dao.Account
-	s.dao.DB.Where("username=?", params.Username).Or("cellphone=?", params.Cellphone).Or("email=?", params.Email).Find(&account)
-	if account.Username == params.Username {
-		return errors.New("account has been exist")
+func (s *AccountData) Get(ctx context.Context, username, password string) (accounts []dao.Account, err error) {
+	// ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	// defer cancel()
+	if username == "" {
+		username = ecrypto.GenerateRandomString(16)
 	}
-	if account.Cellphone == params.Cellphone {
-		return errors.New("cellphone has been exist")
+	if password == "" {
+		password = ecrypto.GenerateRandomString(16)
 	}
-	if account.Email == params.Email {
-		return errors.New("email has been exist")
-	}
-
-	flakeRes, err := s.rpc.Flake.New(ctx, &flake_pb.NewRequest{})
-	if err != nil || flakeRes.Data == 0 {
-		s.logger.Errorf("app:account|data:account|func:create|info:call falke.New error|params:%+v|error:%s", params, err.Error())
-		return errors.New("create id error")
-	}
-
-	ageRes, err := s.rpc.Age.Get(ctx, &age_pb.GetRequest{Age: params.Age})
+	var fileds = make(map[string]interface{})
+	fileds["username"] = username
+	accounts, err = s.dao.FindByFields(fileds)
 	if err != nil {
-		s.logger.Errorf("app:account|data:account|func:create|info:call age.Get error|params:%+v|error:%s", params, err.Error())
-		return errors.New("get age id error")
-	}
-
-	account.Id = flakeRes.Data
-	account.Username = params.Username
-	account.Age = params.Age
-	account.AgeId = ageRes.Data.Id
-	account.Level = params.Level
-	account.QQ = params.QQ
-	account.Wechat = params.Wechat
-	account.Cellphone = params.Cellphone
-	account.Email = params.Email
-	account.LastLoginTime = time.Now().Format("2006-01-02 15:04:05")
-
-	account.Salt = ecrypto.GenerateRandomHex(64)
-	account.Password = ecrypto.GeneratePassword(params.Password, account.Salt)
-
-	err = s.dao.Create(account)
-	if err != nil {
-		s.logger.Errorf("app:account|service:account|layer:data|func:create|info:create account error|params:%+v|error:%s", params, err.Error())
-		return errors.New("create account error")
-	}
-	return
-}
-
-func (s *AccountData) Deletes(ctx context.Context, params *DeletesRequest) (err error) {
-	var accounts []dao.Account
-	var fields map[string]interface{}
-	fields["id"] = params.Ids
-	fields["is_deleted"] = 1
-	accounts, err = s.dao.FindByFields(fields)
-	if err != nil {
+		s.logger.Errorf("app:account|data:account|func:get|info:get account error|params:%+v|error:%s", username, err.Error())
+		err = errors.New("get account error")
 		return
 	}
-	if len(accounts) != len(params.Ids) {
-		return errors.New("accounts can not found")
+	if len(accounts) != 0 {
+		s.logger.Errorf("app:account|data:account|func:get|info:get account error|params:%+v|account:%s", username, accounts[0])
+		err = errors.New("account exist error")
+		return
 	}
 
-	err = s.dao.DeleteByIds(params.Ids)
-	return
-}
+	var newAccount dao.Account
+	var flake *flake_pb.NewResponse
+	var age *age_pb.GetResponse
+	var email *email_pb.GetResponse
+	var bank *bank_pb.GetResponse
+	var cellphone *cellphone_pb.GetResponse
+	var wg sync.WaitGroup
+	var errs []error
 
-func (s *AccountData) Gets(ctx context.Context, params *GetsRequest) (accounts []dao.Account, err error) {
-	query := s.dao.DB.Where("name IN ?", params.Ids)
-	if params.Level != 0 {
-		query.Where("level = ?", params.Level)
+	wg.Add(5)
+	// flake
+	go func(ctx context.Context) {
+		defer wg.Done()
+		var err error
+		flakeRes, err := s.rpc.Flake.New(ctx, &flake_pb.NewRequest{})
+		if err != nil || flakeRes.Data == 0 {
+			s.logger.Errorf("app:account|data:account|func:get|info:call falke.New error|params:%+v|error:%s", username, err.Error())
+			errs = append(errs, errors.New("get id error"))
+			return
+		}
+		if flakeRes.Code != 0 {
+			s.logger.Errorf("app:account|data:account|func:get|info:call falke.New code error|params:%+v|error:%s|response:%+v", username, err.Error(), flakeRes)
+			errs = append(errs, errors.New("get id code error"))
+			return
+		}
+		flake = flakeRes
+	}(ctx)
+
+	// age
+	go func(ctx context.Context) {
+		defer wg.Done()
+		ageRes, err := s.rpc.Age.Get(ctx, &age_pb.GetRequest{})
+		if err != nil {
+			s.logger.Errorf("app:account|data:account|func:get|info:call age.Get error|params:%+v|error:%s", nil, err.Error())
+			errs = append(errs, errors.New("get age id error"))
+			return
+		}
+		if ageRes.Code != 0 {
+			s.logger.Errorf("app:account|data:account|func:get|info:call age.Get code error|params:%+v|error:%s|response:%+v", username, err.Error(), ageRes)
+			errs = append(errs, errors.New("get age code error"))
+			return
+		}
+		age = ageRes
+	}(ctx)
+
+	// // email
+	go func(ctx context.Context) {
+		defer wg.Done()
+		emailRes, err := s.rpc.Email.Get(ctx, &email_pb.GetRequest{})
+		if err != nil {
+			s.logger.Errorf("app:account|data:account|func:get|info:call email.Get error|params:%+v|error:%s", username, err.Error())
+			errs = append(errs, errors.New("get email error"))
+			return
+		}
+		if emailRes.Code != 0 {
+			s.logger.Errorf("app:account|data:account|func:get|info:call email.Get code error|params:%+v|error:%s|response:%+v", username, err.Error(), emailRes)
+			errs = append(errs, errors.New("get email code error"))
+			return
+		}
+		email = emailRes
+	}(ctx)
+
+	// bank
+	go func(ctx context.Context) {
+		defer wg.Done()
+		bankRes, err := s.rpc.Bank.Get(ctx, &bank_pb.GetRequest{})
+		if err != nil {
+			s.logger.Errorf("app:account|data:account|func:get|info:call bank.Get error|params:%+v|error:%s", username, err.Error())
+			errs = append(errs, errors.New("get bank error"))
+			return
+		}
+		if bankRes.Code != 0 {
+			s.logger.Errorf("app:account|data:account|func:get|info:call bank.Get code error|params:%+v|error:%s|response:%+v", username, err.Error(), bankRes)
+			errs = append(errs, errors.New("get email code error"))
+			return
+		}
+		bank = bankRes
+	}(ctx)
+
+	// cellphone
+	go func(ctx context.Context) {
+		defer wg.Done()
+		cellphoneRes, err := s.rpc.Cellphone.Get(ctx, &cellphone_pb.GetRequest{})
+		if err != nil {
+			s.logger.Errorf("app:account|data:account|func:get|info:call cellphone.Get error|params:%+v|error:%s", username, err.Error())
+			errs = append(errs, errors.New("get bank error"))
+			return
+		}
+		if cellphoneRes.Code != 0 {
+			s.logger.Errorf("app:account|data:account|func:get|info:call cellphone.Get code error|params:%+v|error:%s|response:%+v", username, err.Error(), cellphone)
+			errs = append(errs, errors.New("get email code error"))
+			return
+		}
+		cellphone = cellphoneRes
+	}(ctx)
+
+	wg.Wait()
+	if len(errs) != 0 {
+		s.logger.Errorf("app:account|data:account|func:get|info:get account error|params:%+v|error:%s", username, errs)
+		errs = append(errs, errors.New("get account error"))
+		return
 	}
-	if params.Username != "" {
-		query.Where("username LIKE ?", params.Username)
-	}
-	if params.Age != 0 {
-		query.Where("age = ?", params.Age)
-	}
-	if params.QQ != "" {
-		query.Where("qq = ?", params.QQ)
-	}
-	if params.Wechat != "" {
-		query.Where("wechat = ?", params.Wechat)
-	}
-	if params.Cellphone != "" {
-		query.Where("cellphone = ?", params.Cellphone)
-	}
-	if params.Email != "" {
-		query.Where("level = ?", params.Email)
-	}
-	err = query.Find(&accounts).Error
-	return
+
+	newAccount.Id = (*flake).Data
+	newAccount.Age = (*age).Data.Age
+	newAccount.AgeId = (*age).Data.Id
+	newAccount.Email = (*email).Data.Email
+	newAccount.EmailId = (*email).Data.Id
+	newAccount.Cellphone = (*cellphone).Data.Cellphone
+	newAccount.CellphoneId = (*cellphone).Data.Id
+	newAccount.Bank = (*bank).Data.Bank
+	newAccount.BankId = (*bank).Data.Id
+	newAccount.Username = username
+	newAccount.Salt = ecrypto.GenerateRandomHex(64)
+	newAccount.Password = ecrypto.GeneratePassword(password, newAccount.Salt)
+	err = s.dao.Create(newAccount)
+	return []dao.Account{newAccount}, nil
 }
 
 func (s *AccountData) Auth(ctx context.Context, params *AuthRequest) (account dao.Account, err error) {

@@ -6,20 +6,19 @@ import (
 
 type Account struct {
 	CommonTimeModel
-	Id            uint64 `json:"id" gorm"primaryKey"`
-	Username      string `json:"username"`
-	Age           uint64 `json:"age`
-	AgeId         uint64 `json:"age_id`
-	Password      string `json:"password`
-	Salt          string `json:"salt`
-	Level         uint64 `json:"level"`
-	QQ            string `json:"qq"`
-	Wechat        string `json:"wechat"`
-	Cellphone     string `json:"cellphone"`
-	Email         string `json:"email"`
-	State         uint64 `gorm:"default:0" json:"state"`
-	LastLoginTime string `json:"last_login_time"`
-	IsDeleted     uint64 `gorm:"default:0" json:"is_deleted"`
+	Id          uint64 `json:"id" gorm"primaryKey"`
+	Username    string `json:"username"`
+	Password    string `json:"password`
+	Salt        string `json:"salt`
+	Age         uint64 `json:"age`
+	AgeId       uint64 `json:"age_id`
+	Email       string `json:"email"`
+	EmailId     uint64 `json:"email_id`
+	Bank        uint64 `json:"bank"`
+	BankId      uint64 `json:"bank_id`
+	CellphoneId uint64 `json:"cellphone_id`
+	Cellphone   uint64 `json:"cellphone"`
+	IsDeleted   uint64 `gorm:"default:0" json:"is_deleted"`
 }
 
 type AccountDao struct {

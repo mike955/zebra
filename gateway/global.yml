@@ -5,3 +5,6 @@ redis:
   redis_addr: 10.175.19.244:63790
   redis_password:
   redis_default_expire: 10
+rpc:
+  account_addr: "0.0.0.0:5180"
+  flake_addr: "0.0.0.0:5080"

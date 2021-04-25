@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math/rand"
 	"runtime"
+	"time"
 
 	"github.com/mike955/zebra/account/internal/server"
 )
@@ -19,6 +21,7 @@ var (
 )
 
 func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
 	flag.StringVar(&conf, "f", "", "-f <config>")
 	flag.BoolVar(&version, "v", false, "-v")
 	flag.Parse()

@@ -22,150 +22,22 @@ func NewAccountService(logger *logrus.Logger) *AccountService {
 	}
 }
 
-func (s *AccountService) Create(ctx context.Context, req *pb.CreateRequest) (response *pb.CreateResponse, err error) {
-	response = new(pb.CreateResponse)
-	err = s.data.Create(ctx, &data.CreateRequest{
-		Username:  req.Username,
-		Password:  req.Password,
-		Level:     req.Level,
-		QQ:        req.Qq,
-		Wechat:    req.Wechat,
-		Cellphone: req.Cellphone,
-		Email:     req.Email,
-		Age:       req.Age,
-	})
-	if err != nil {
-		s.logger.Errorf("app:account|service:account|layer:service|func:create|info:create account error|params:%+v|error:%s", req, err.Error())
-		response.Msg = "create account error"
-	}
-	return
-}
-
-func (s *AccountService) Delete(ctx context.Context, req *pb.DeleteRequest) (response *pb.DeleteResponse, err error) {
-	response = new(pb.DeleteResponse)
-	err = s.data.Deletes(ctx, &data.DeletesRequest{
-		Ids: []uint64{req.Id},
-	})
-	if err != nil {
-		s.logger.Errorf("app:account|service:account|layer:service|func:delete|info:delete account error|params:%+v|error:%s", req, err.Error())
-		response.Msg = "delete account error"
-	}
-	return
-}
-
-func (s *AccountService) Deletes(ctx context.Context, req *pb.DeletesRequest) (response *pb.DeletesResponse, err error) {
-	response = new(pb.DeletesResponse)
-	err = s.data.Deletes(ctx, &data.DeletesRequest{
-		Ids: req.Ids,
-	})
-	if err != nil {
-		s.logger.Errorf("app:account|service:account|layer:service|func:deletes|info:delete accounts error|params:%+v|error:%s", req, err.Error())
-		response.Msg = "delete account error"
-	}
-	return
-}
-
-func (s *AccountService) Update(ctx context.Context, req *pb.UpdateRequest) (response *pb.UpdateResponse, err error) {
-	response = new(pb.UpdateResponse)
-	return
-}
-
-// TODO(mike.cai): add offset and limit
 func (s *AccountService) Get(ctx context.Context, req *pb.GetRequest) (response *pb.GetResponse, err error) {
 	response = new(pb.GetResponse)
-	params := &data.GetsRequest{}
-	if req.Id != 0 {
-		params.Ids = []uint64{req.Id}
-	}
-	if req.Username != "" {
-		params.Username = req.Username
-	}
-	if req.Age != 0 {
-		params.Age = req.Age
-	}
-	if req.Level != 0 {
-		params.Level = req.Level
-	}
-	if req.Qq != "" {
-		params.QQ = req.Qq
-	}
-	if req.Wechat != "" {
-		params.Wechat = req.Wechat
-	}
-	if req.Cellphone != "" {
-		params.Cellphone = req.Cellphone
-	}
-	if req.Email != "" {
-		params.Email = req.Email
-	}
-	accounts, err := s.data.Gets(ctx, params)
+	accounts, err := s.data.Get(ctx, req.Username, req.Password)
 	if err != nil {
-		s.logger.Errorf("app:account|service:account|layer:service|func:gets|info:gets accounts error|params:%+v|error:%s", req, err.Error())
-		response.Msg = "delete account error"
+		s.logger.Errorf("app:account|service:account|func:gets|info:get account error|params:%+v|error:%s", req, err.Error())
+		response.Msg = "get account error"
 		return
 	}
 	response.Data = &pb.Account{
 		Id:        accounts[0].Id,
 		Username:  accounts[0].Username,
-		Level:     accounts[0].Level,
-		Qq:        accounts[0].QQ,
-		Wechat:    accounts[0].Wechat,
-		Cellphone: accounts[0].Cellphone,
+		Age:       accounts[0].Age,
 		Email:     accounts[0].Email,
+		Bank:      accounts[0].Bank,
+		Cellphone: accounts[0].Cellphone,
 	}
-	return
-}
-
-// TODO(mike.cai): add offset and limit
-func (s *AccountService) Gets(ctx context.Context, req *pb.GetsRequest) (response *pb.GetsResponse, err error) {
-	response = new(pb.GetsResponse)
-
-	params := &data.GetsRequest{}
-	if len(req.Ids) > 0 {
-		params.Ids = req.Ids
-	}
-	if req.Username != "" {
-		params.Username = req.Username
-	}
-	if req.Age != 0 {
-		params.Age = req.Age
-	}
-	if req.Level != 0 {
-		params.Level = req.Level
-	}
-	if req.Qq != "" {
-		params.QQ = req.Qq
-	}
-	if req.Wechat != "" {
-		params.Wechat = req.Wechat
-	}
-	if req.Cellphone != "" {
-		params.Cellphone = req.Cellphone
-	}
-	if req.Email != "" {
-		params.Email = req.Email
-	}
-	accounts, err := s.data.Gets(ctx, params)
-	if err != nil {
-		s.logger.Errorf("app:account|service:account|layer:service|func:gets|info:gets accounts error|params:%+v|error:%s", req, err.Error())
-		response.Msg = "delete account error"
-		return
-	}
-	var acc []*pb.Account
-	for _, a := range accounts {
-		account := &pb.Account{
-			Id:        a.Id,
-			Username:  a.Username,
-			Level:     a.Level,
-			Qq:        a.QQ,
-			Wechat:    a.Wechat,
-			Cellphone: a.Cellphone,
-			Email:     a.Email,
-			Age:       a.Age,
-		}
-		acc = append(acc, account)
-	}
-	response.Data = acc
 	return
 }
 
@@ -183,12 +55,10 @@ func (s *AccountService) Auth(ctx context.Context, req *pb.AuthRequest) (respons
 	response.Data = &pb.Account{
 		Id:        account.Id,
 		Username:  account.Username,
-		Level:     account.Level,
-		Qq:        account.QQ,
-		Wechat:    account.Wechat,
-		Cellphone: account.Cellphone,
-		Email:     account.Email,
 		Age:       account.Age,
+		Email:     account.Email,
+		Bank:      account.Bank,
+		Cellphone: account.Cellphone,
 	}
 	return
 }

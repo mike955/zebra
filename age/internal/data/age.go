@@ -24,6 +24,7 @@ func NewAgeData(logger *logrus.Logger) *AgeData {
 	}
 }
 
+// TODO(mike.cao): 递归每次返回不一样的 age
 func (s *AgeData) Get(ctx context.Context, age uint64) (sage dao.Age, err error) {
 	var fields = make(map[string]interface{})
 	fields["age"] = age
