@@ -21,6 +21,7 @@ type ServerOption func(o *Server)
 
 type Server struct {
 	*grpc.Server
+	app      string
 	network  string
 	address  string
 	timeout  time.Duration
@@ -87,12 +88,13 @@ func GrpcStreamServerInterceptor(interceptors ...grpc.StreamServerInterceptor) S
 
 func GrpcDefaultUnaryServerInterceptor() ServerOption {
 	return func(s *Server) {
-		s.grpcOpts = append(s.grpcOpts, defaultGrpcOpt(defaultLogger()))
+		s.grpcOpts = append(s.grpcOpts, defaultGrpcOpt(s))
 	}
 }
 
-func NewServer(opts ...ServerOption) *Server {
+func NewServer(app string, opts ...ServerOption) *Server {
 	srv := &Server{
+		app:      app,
 		network:  "tcp",
 		address:  ":5080",
 		timeout:  time.Second,
@@ -129,11 +131,11 @@ func defaultLogger() (logger *logrus.Logger) {
 	return
 }
 
-func defaultGrpcOpt(logger *logrus.Logger) (opt grpc.ServerOption) {
+func defaultGrpcOpt(s *Server) (opt grpc.ServerOption) {
 	return grpc.ChainUnaryInterceptor(
-		recoveryInterceptor(logger),
-		timeoutInterceptor(logger),
-		logInterceptor(logger),
+		recoveryInterceptor(s.Logger),
+		timeoutInterceptor(s.Logger),
+		logInterceptor(s),
 	)
 }
 
@@ -161,7 +163,7 @@ func timeoutInterceptor(logger *logrus.Logger) grpc.UnaryServerInterceptor {
 	}
 }
 
-func logInterceptor(logger *logrus.Logger) grpc.UnaryServerInterceptor {
+func logInterceptor(s *Server) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 		var traceId, path, params, method string
 		var md metadata.MD
@@ -178,12 +180,21 @@ func logInterceptor(logger *logrus.Logger) grpc.UnaryServerInterceptor {
 		path = info.FullMethod
 		params = req.(fmt.Stringer).String()
 		method = "POST"
-		logger.Infof("receive grpc request|traceId:%s|md:%+v|path:%s|method:%s|params:%s", traceId, md, path, method, params)
+		logger := s.Logger.WithFields(logrus.Fields{
+			"app":     s.app,
+			"traceId": traceId,
+			"path":    path,
+			"method":  method,
+			"md":      md,
+			"params":  params,
+		})
+		logger.Infof("receive grpc request")
+		ctx = context.WithValue(ctx, "logger", logger)
 		resp, err = handler(ctx, req)
 		if err != nil {
-			logger.Errorf("grpc request failled|traceId:%s|md:%+v|path:%s|method:%s|params:%s", traceId, md, path, method, params)
+			logger.Infof("grpc request failled | err: %s", err.Error())
 		} else {
-			logger.Infof("grpc request success|traceId:%s|md:%+v|path:%s|method:%s|params:%s", traceId, md, path, method, params)
+			logger.Infof("grpc request success")
 		}
 		return
 	}

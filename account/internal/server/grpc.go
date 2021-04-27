@@ -15,6 +15,7 @@ import (
 	pb "github.com/mike955/zebra/api/account"
 	"github.com/mike955/zebra/pkg/transform/grpc"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/reflection"
 	"gopkg.in/yaml.v2"
 )
@@ -29,8 +30,9 @@ func NewGRPCServer(conf string) (server *grpc.Server) {
 		grpc.GrpcDefaultUnaryServerInterceptor(),
 	}
 
-	server = grpc.NewServer(opts...)
-	s := service.NewAccountService(server.Logger)
+	server = grpc.NewServer("account", opts...)
+	log := server.Logger.WithFields(logrus.Fields{"app": "account"})
+	s := service.NewAccountService(log)
 	pb.RegisterAccountServiceServer(server, s)
 	reflection.Register(server.Server) // Register reflection service on gRPC server.
 	grpc_prometheus.EnableHandlingTimeHistogram()

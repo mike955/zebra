@@ -13,11 +13,11 @@ import (
 
 type AgeService struct {
 	pb.UnimplementedAgeServiceServer
-	logger *logrus.Logger
+	logger *logrus.Entry
 	data   *data.AgeData
 }
 
-func NewAgeService(logger *logrus.Logger) *AgeService {
+func NewAgeService(logger *logrus.Entry) *AgeService {
 	return &AgeService{
 		logger: logger,
 		data:   data.NewAgeData(logger),
@@ -26,6 +26,10 @@ func NewAgeService(logger *logrus.Logger) *AgeService {
 
 func (s *AgeService) Get(ctx context.Context, request *pb.GetRequest) (response *pb.GetResponse, err error) {
 	response = new(pb.GetResponse)
+	if logger := ctx.Value("logger"); logger != nil {
+		s.logger = logger.(*logrus.Entry)
+		s.data.SetLogger(logger.(*logrus.Entry))
+	}
 	if request.Age == 0 {
 		request.Age = ecrypto.GenerateRandomUint64()
 	}

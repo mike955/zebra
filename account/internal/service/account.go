@@ -10,12 +10,12 @@ import (
 
 type AccountService struct {
 	pb.UnimplementedAccountServiceServer
-	logger *logrus.Logger
+	logger *logrus.Entry
 	data   *data.AccountData
 }
 
 // service check params
-func NewAccountService(logger *logrus.Logger) *AccountService {
+func NewAccountService(logger *logrus.Entry) *AccountService {
 	return &AccountService{
 		logger: logger,
 		data:   data.NewAccountData(logger),
@@ -23,6 +23,10 @@ func NewAccountService(logger *logrus.Logger) *AccountService {
 }
 
 func (s *AccountService) Get(ctx context.Context, req *pb.GetRequest) (response *pb.GetResponse, err error) {
+	if logger := ctx.Value("logger"); logger != nil {
+		s.logger = logger.(*logrus.Entry)
+		s.data.SetLogger(logger.(*logrus.Entry))
+	}
 	response = new(pb.GetResponse)
 	accounts, err := s.data.Get(ctx, req.Username, req.Password)
 	if err != nil {
@@ -42,6 +46,10 @@ func (s *AccountService) Get(ctx context.Context, req *pb.GetRequest) (response 
 }
 
 func (s *AccountService) Auth(ctx context.Context, req *pb.AuthRequest) (response *pb.AuthResponse, err error) {
+	if logger := ctx.Value("logger"); logger != nil {
+		s.logger = logger.(*logrus.Entry)
+		s.data.SetLogger(logger.(*logrus.Entry))
+	}
 	response = new(pb.AuthResponse)
 	account, err := s.data.Auth(ctx, &data.AuthRequest{
 		Username: req.Username,

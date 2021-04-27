@@ -13,11 +13,11 @@ import (
 
 type EmailService struct {
 	pb.UnimplementedEmailServiceServer
-	logger *logrus.Logger
+	logger *logrus.Entry
 	data   *data.EmailData
 }
 
-func NewEmailService(logger *logrus.Logger) *EmailService {
+func NewEmailService(logger *logrus.Entry) *EmailService {
 	return &EmailService{
 		logger: logger,
 		data:   data.NewEmailData(logger),
@@ -26,6 +26,10 @@ func NewEmailService(logger *logrus.Logger) *EmailService {
 
 func (s *EmailService) Get(ctx context.Context, request *pb.GetRequest) (response *pb.GetResponse, err error) {
 	response = new(pb.GetResponse)
+	if logger := ctx.Value("logger"); logger != nil {
+		s.logger = logger.(*logrus.Entry)
+		s.data.SetLogger(logger.(*logrus.Entry))
+	}
 	if request.Email == "" {
 		request.Email = ecrypto.GenerateRandomString(50) + "@zebra.com"
 	}

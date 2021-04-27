@@ -14,6 +14,7 @@ import (
 	"github.com/mike955/zebra/flake/internal/service"
 	"github.com/mike955/zebra/pkg/transform/grpc"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/reflection"
 	"gopkg.in/yaml.v2"
 
@@ -27,16 +28,20 @@ import (
 
 func NewGRPCServer(conf string) (server *grpc.Server) {
 	// _init(conf)
+	logger := newLogger()
+
 	config := configs.GlobalConfig.Server
 	var opts = []grpc.ServerOption{
+		grpc.Logger(logger),
 		grpc.Address(config.GRPCAddr),
 		grpc.Timeout(config.Timeout),
 		grpc.GrpcUnaryServerInterceptor(grpc_prometheus.UnaryServerInterceptor),
 		grpc.GrpcDefaultUnaryServerInterceptor(),
 	}
 
-	server = grpc.NewServer(opts...)
-	s := service.NewFlakeService(server.Logger)
+	server = grpc.NewServer("flake", opts...)
+	log := server.Logger.WithFields(logrus.Fields{"app": "flake"})
+	s := service.NewFlakeService(log)
 	pb.RegisterFlakeServiceServer(server, s)
 	reflection.Register(server.Server) // Register reflection service on gRPC server.
 	grpc_prometheus.EnableHandlingTimeHistogram()
@@ -88,4 +93,11 @@ func InitConfig(conf string) {
 		panic("parse config file error: " + err.Error())
 	}
 	data.InitSf(configs.GlobalConfig.Server.MachineId)
+}
+
+func newLogger() *logrus.Logger {
+	logger := logrus.New()
+	logger.SetFormatter(&logrus.JSONFormatter{})
+	logger.Out = os.Stderr
+	return logger
 }

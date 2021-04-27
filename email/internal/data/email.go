@@ -11,17 +11,21 @@ import (
 )
 
 type EmailData struct {
-	logger *logrus.Logger
+	logger *logrus.Entry
 	dao    *dao.EmailDao
 	rpc    *rpc.Rpc
 }
 
-func NewEmailData(logger *logrus.Logger) *EmailData {
+func NewEmailData(logger *logrus.Entry) *EmailData {
 	return &EmailData{
 		logger: logger,
 		dao:    dao.NewEmailDao(),
 		rpc:    rpc.NewRpc(),
 	}
+}
+
+func (s *EmailData) SetLogger(logger *logrus.Entry) {
+	s.logger = logger
 }
 
 func (s *EmailData) Get(ctx context.Context, emailName string) (email dao.Email, err error) {

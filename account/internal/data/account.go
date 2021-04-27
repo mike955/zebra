@@ -20,18 +20,22 @@ import (
 )
 
 type AccountData struct {
-	logger *logrus.Logger
+	logger *logrus.Entry
 	dao    *dao.AccountDao
 	rpc    *rpc.Rpc
 }
 
 // data handle logic
-func NewAccountData(logger *logrus.Logger) *AccountData {
+func NewAccountData(logger *logrus.Entry) *AccountData {
 	return &AccountData{
 		logger: logger,
 		dao:    dao.NewAccountDao(),
 		rpc:    rpc.NewRpc(),
 	}
+}
+
+func (s *AccountData) SetLogger(logger *logrus.Entry) {
+	s.logger = logger
 }
 
 func (s *AccountData) Get(ctx context.Context, username, password string) (accounts []dao.Account, err error) {

@@ -23,8 +23,8 @@ func Init(config configs.Mysql) {
 
 	addr, username, password, database := config.MysqlAddr, config.MysqlUsername, config.MysqlPassword, config.MysqlDatabase
 
-	if os.Getenv("MYSQL_ADDR") != "" {
-		addr = os.Getenv("MYSQL_ADDR")
+	if os.Getenv("MYSQL_ADDR") != "" && os.Getenv("MYSQL_PORT") != "" {
+		addr = os.Getenv("MYSQL_ADDR") + ":" + os.Getenv("MYSQL_PORT")
 	}
 	if os.Getenv("MYSQL_USERNAME") != "" {
 		username = os.Getenv("MYSQL_USERNAME")

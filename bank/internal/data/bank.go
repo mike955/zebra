@@ -11,17 +11,21 @@ import (
 )
 
 type BankData struct {
-	logger *logrus.Logger
+	logger *logrus.Entry
 	dao    *dao.BankDao
 	rpc    *rpc.Rpc
 }
 
-func NewBankData(logger *logrus.Logger) *BankData {
+func NewBankData(logger *logrus.Entry) *BankData {
 	return &BankData{
 		logger: logger,
 		dao:    dao.NewBankDao(),
 		rpc:    rpc.NewRpc(),
 	}
+}
+
+func (s *BankData) SetLogger(logger *logrus.Entry) {
+	s.logger = logger
 }
 
 func (s *BankData) Get(ctx context.Context, bank uint64) (email dao.Bank, err error) {

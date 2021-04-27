@@ -21,13 +21,17 @@ func InitSf(machineId uint16) {
 }
 
 type FlakeData struct {
-	logger *logrus.Logger
+	logger *logrus.Entry
 }
 
-func NewFlakeData(logger *logrus.Logger) *FlakeData {
+func NewFlakeData(logger *logrus.Entry) *FlakeData {
 	return &FlakeData{
 		logger: logger,
 	}
+}
+
+func (s *FlakeData) SetLogger(logger *logrus.Entry) {
+	s.logger = logger
 }
 
 func (s *FlakeData) New(ctx context.Context) (id uint64, err error) {

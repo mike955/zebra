@@ -13,11 +13,11 @@ import (
 
 type CellphoneService struct {
 	pb.UnimplementedCellphoneServiceServer
-	logger *logrus.Logger
+	logger *logrus.Entry
 	data   *data.CellphoneData
 }
 
-func NewCellphoneService(logger *logrus.Logger) *CellphoneService {
+func NewCellphoneService(logger *logrus.Entry) *CellphoneService {
 	return &CellphoneService{
 		logger: logger,
 		data:   data.NewCellphoneData(logger),
@@ -26,6 +26,10 @@ func NewCellphoneService(logger *logrus.Logger) *CellphoneService {
 
 func (s *CellphoneService) Get(ctx context.Context, request *pb.GetRequest) (response *pb.GetResponse, err error) {
 	response = new(pb.GetResponse)
+	if logger := ctx.Value("logger"); logger != nil {
+		s.logger = logger.(*logrus.Entry)
+		s.data.SetLogger(logger.(*logrus.Entry))
+	}
 	if request.Cellphone == 0 {
 		request.Cellphone = ecrypto.GenerateRandomUint64()
 	}

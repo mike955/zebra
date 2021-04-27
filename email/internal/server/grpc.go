@@ -14,6 +14,7 @@ import (
 	"github.com/mike955/zebra/email/internal/service"
 	"github.com/mike955/zebra/pkg/transform/grpc"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/reflection"
 	"gopkg.in/yaml.v2"
 
@@ -35,8 +36,9 @@ func NewGRPCServer(conf string) (server *grpc.Server) {
 		grpc.GrpcDefaultUnaryServerInterceptor(),
 	}
 
-	server = grpc.NewServer(opts...)
-	s := service.NewEmailService(server.Logger)
+	server = grpc.NewServer("email", opts...)
+	log := server.Logger.WithFields(logrus.Fields{"app": "email"})
+	s := service.NewEmailService(log)
 	pb.RegisterEmailServiceServer(server, s)
 	reflection.Register(server.Server) // Register reflection service on gRPC server.
 	grpc_prometheus.EnableHandlingTimeHistogram()
@@ -88,4 +90,11 @@ func InitConfig(conf string) {
 		panic("parse config file error: " + err.Error())
 	}
 	dao.Init(configs.GlobalConfig.Mysql)
+}
+
+func newLogger() *logrus.Logger {
+	logger := logrus.New()
+	logger.SetFormatter(&logrus.JSONFormatter{})
+	logger.Out = os.Stderr
+	return logger
 }

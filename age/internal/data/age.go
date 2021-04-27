@@ -11,17 +11,21 @@ import (
 )
 
 type AgeData struct {
-	logger *logrus.Logger
+	logger *logrus.Entry
 	dao    *dao.AgeDao
 	rpc    *rpc.Rpc
 }
 
-func NewAgeData(logger *logrus.Logger) *AgeData {
+func NewAgeData(logger *logrus.Entry) *AgeData {
 	return &AgeData{
 		logger: logger,
 		dao:    dao.NewAgeDao(),
 		rpc:    rpc.NewRpc(),
 	}
+}
+
+func (s *AgeData) SetLogger(logger *logrus.Entry) {
+	s.logger = logger
 }
 
 // TODO(mike.cao): 递归每次返回不一样的 age

@@ -11,17 +11,21 @@ import (
 )
 
 type CellphoneData struct {
-	logger *logrus.Logger
+	logger *logrus.Entry
 	dao    *dao.CellphoneDao
 	rpc    *rpc.Rpc
 }
 
-func NewCellphoneData(logger *logrus.Logger) *CellphoneData {
+func NewCellphoneData(logger *logrus.Entry) *CellphoneData {
 	return &CellphoneData{
 		logger: logger,
 		dao:    dao.NewCellphoneDao(),
 		rpc:    rpc.NewRpc(),
 	}
+}
+
+func (s *CellphoneData) SetLogger(logger *logrus.Entry) {
+	s.logger = logger
 }
 
 func (s *CellphoneData) Get(ctx context.Context, cellphone uint64) (cp dao.Cellphone, err error) {
