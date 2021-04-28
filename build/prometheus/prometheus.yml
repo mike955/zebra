@@ -1,0 +1,33 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'zebra-prometheus'
+
+rule_files:
+
+scrape_configs:
+  - job_name: 'flake'
+    scrape_interval: 1s
+    static_configs:
+      - targets: [flake:5181]
+  - job_name: 'account'
+    scrape_interval: 1s
+    static_configs:
+      - targets: [account:5281]
+  - job_name: 'age'
+    scrape_interval: 1s
+    static_configs:
+      - targets: [age:5381]
+  - job_name: 'email'
+    scrape_interval: 1s
+    static_configs:
+      - targets: [email:5481]
+  - job_name: 'bank'
+    scrape_interval: 1s
+    static_configs:
+      - targets: [bank:5581]
+  - job_name: 'cellphone'
+    scrape_interval: 1s
+    static_configs:
+      - targets: [cellphone:5681]

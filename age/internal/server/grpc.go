@@ -18,6 +18,8 @@ import (
 	"google.golang.org/grpc/reflection"
 	"gopkg.in/yaml.v2"
 
+	_ "net/http/pprof"
+
 	pb "github.com/mike955/zebra/api/age"
 )
 
@@ -28,8 +30,10 @@ import (
 
 func NewGRPCServer(conf string) (server *grpc.Server) {
 	// _init(conf)
+	logger := newLogger()
 	config := configs.GlobalConfig.Server
 	var opts = []grpc.ServerOption{
+		grpc.Logger(logger),
 		grpc.Address(config.GRPCAddr),
 		grpc.Timeout(config.Timeout),
 		grpc.GrpcUnaryServerInterceptor(grpc_prometheus.UnaryServerInterceptor),

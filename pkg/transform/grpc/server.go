@@ -165,14 +165,17 @@ func timeoutInterceptor(logger *logrus.Logger) grpc.UnaryServerInterceptor {
 
 func logInterceptor(s *Server) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
-		var traceId, path, params, method string
+		var x_real_ip, traceId, path, params, method string
 		var md metadata.MD
 		var ok bool
 
 		md, ok = metadata.FromIncomingContext(ctx)
 		if ok {
-			if ids, ok := md["traceId"]; ok {
-				traceId = ids[0]
+			if len(md.Get("X-Real-IP")) > 0 {
+				x_real_ip = md.Get("X-Real-IP")[0]
+			}
+			if len(md.Get("traceId")) > 0 {
+				traceId = md.Get("traceId")[0]
 			} else {
 				traceId = "no-id"
 			}
@@ -181,12 +184,13 @@ func logInterceptor(s *Server) grpc.UnaryServerInterceptor {
 		params = req.(fmt.Stringer).String()
 		method = "POST"
 		logger := s.Logger.WithFields(logrus.Fields{
-			"app":     s.app,
-			"traceId": traceId,
-			"path":    path,
-			"method":  method,
-			"md":      md,
-			"params":  params,
+			"app":       s.app,
+			"x_real_ip": x_real_ip,
+			"traceId":   traceId,
+			"path":      path,
+			"method":    method,
+			"md":        md,
+			"params":    params,
 		})
 		logger.Infof("receive grpc request")
 		ctx = context.WithValue(ctx, "logger", logger)

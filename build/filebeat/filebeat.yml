@@ -1,0 +1,12 @@
+filebeat.inputs:
+- type: log
+  paths:
+    - /root/zebra.log
+  
+output.kafka:
+  hosts: ["192.168.56.101:9092"]  # kafka broker address
+  topic: "zebra-log"
+  partition.round_robin:
+    reachable_only: false
+  required_acks: 1
+  max_message_bytes: 1000000

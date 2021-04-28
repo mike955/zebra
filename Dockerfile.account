@@ -9,13 +9,21 @@ FROM alpine:3.12.1
 
 #this seems dumb, but the libc from the build stage is not the same as the alpine libc
 #create a symlink to where it expects it since they are compatable. https://stackoverflow.com/a/35613430/3105368
-RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
+RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2 \
+    && apk add --upgrade grpc-cli
 
 WORKDIR /root/
 COPY --from=builder /go/src/github.com/mike955/zebra/account_linux /root/
 COPY account/global.yml /root/global.yml
-COPY grpc_health_probe /usr/local/bin/
+
+COPY build/init/. /usr/local/bin/
+COPY build/filebeat/filebeat /usr/local/bin/
+COPY build/filebeat/filebeat.yml /root/
+COPY build/run/run.sh /root/
+
 EXPOSE 5280
 EXPOSE 5281
 
+
+# ENTRYPOINT [ "sh", "-c", "/usr/local/bin/wait.sh mysql:3306 -- /root/account_linux -f /root/global.yml" ]
 ENTRYPOINT [ "/root/account_linux", "-f", "/root/global.yml" ]

@@ -18,6 +18,8 @@ import (
 	"google.golang.org/grpc/reflection"
 	"gopkg.in/yaml.v2"
 
+	_ "net/http/pprof"
+
 	pb "github.com/mike955/zebra/api/flake"
 )
 

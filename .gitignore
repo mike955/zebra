@@ -5,3 +5,6 @@ bank.go
 cellphone.go
 email.go
 flake.go
+*.log
+data
+build/filebeat/filebeat

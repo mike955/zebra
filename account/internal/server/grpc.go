@@ -8,6 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	_ "net/http/pprof"
+
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	configs "github.com/mike955/zebra/account/configs"
 	"github.com/mike955/zebra/account/internal/dao"
@@ -22,8 +24,10 @@ import (
 
 func NewGRPCServer(conf string) (server *grpc.Server) {
 	// _init(conf)
+	logger := newLogger()
 	config := configs.GlobalConfig.Server
 	var opts = []grpc.ServerOption{
+		grpc.Logger(logger),
 		grpc.Address(config.GRPCAddr),
 		grpc.Timeout(config.Timeout),
 		grpc.GrpcUnaryServerInterceptor(grpc_prometheus.UnaryServerInterceptor),
@@ -85,4 +89,11 @@ func InitConfig(conf string) {
 	}
 	// data.InitSf(configs.GlobalConfig.Server.MachineId)
 	dao.Init(configs.GlobalConfig.Mysql)
+}
+
+func newLogger() *logrus.Logger {
+	logger := logrus.New()
+	logger.SetFormatter(&logrus.JSONFormatter{})
+	logger.Out = os.Stderr
+	return logger
 }

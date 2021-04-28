@@ -8,6 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	_ "net/http/pprof"
+
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	pb "github.com/mike955/zebra/api/cellphone"
 	configs "github.com/mike955/zebra/cellphone/configs"
@@ -27,8 +29,10 @@ import (
 
 func NewGRPCServer(conf string) (server *grpc.Server) {
 	// _init(conf)
+	logger := newLogger()
 	config := configs.GlobalConfig.Server
 	var opts = []grpc.ServerOption{
+		grpc.Logger(logger),
 		grpc.Address(config.GRPCAddr),
 		grpc.Timeout(config.Timeout),
 		grpc.GrpcUnaryServerInterceptor(grpc_prometheus.UnaryServerInterceptor),

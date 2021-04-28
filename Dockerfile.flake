@@ -2,20 +2,26 @@
 FROM hub.ucloudadmin.com/public/golang:1.14.2 AS builder
 WORKDIR /go/src/github.com/mike955/zebra
 COPY . .
-RUN GOOS=linux GOARCH=amd64 go build -o flake_linux /go/src/github.com/mike955/zebra/flake/cmd/flake/main.go 
-
+RUN GOOS=linux GOARCH=amd64 go build -o zebra_linux /go/src/github.com/mike955/zebra/flake/cmd/flake/main.go 
 
 # runtime
 FROM alpine:3.12.1
 
 #this seems dumb, but the libc from the build stage is not the same as the alpine libc
 #create a symlink to where it expects it since they are compatable. https://stackoverflow.com/a/35613430/3105368
-RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
+RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2 \
+    && apk add --upgrade grpc-cli
 
 WORKDIR /root/
-COPY --from=builder /go/src/github.com/mike955/zebra/flake_linux /root/
+COPY --from=builder /go/src/github.com/mike955/zebra/zebra_linux /root/
 COPY flake/global.yml /root/global.yml
-COPY grpc_health_probe /usr/local/bin/
-EXPOSE 5180
 
-ENTRYPOINT [ "/root/flake_linux", "-f", "/root/global.yml" ]
+COPY build/init/. /usr/local/bin/
+COPY build/filebeat/filebeat /usr/local/bin/
+COPY build/filebeat/filebeat.yml /root/
+COPY build/run/run.sh /root/
+
+EXPOSE 5180
+EXPOSE 5181
+
+ENTRYPOINT [ "sh", "-c", "/root/run.sh" ]

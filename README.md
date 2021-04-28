@@ -55,3 +55,10 @@ sum(rate(grpc_server_started_total{grpc_service="email.EmailService"}[1m])) by (
 sum(rate(grpc_server_started_total{grpc_service="bank.BankService"}[1m])) by (grpc_service)
 
 sum(rate(grpc_server_started_total{grpc_service="cellphone.CellphoneService"}[1m])) by (grpc_service)
+
+
+
+
+
+
+docker run --name es -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" -d docker.elastic.co/elasticsearch/elasticsearch:7.12.0
