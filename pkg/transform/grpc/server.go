@@ -165,6 +165,7 @@ func timeoutInterceptor(logger *logrus.Logger) grpc.UnaryServerInterceptor {
 
 func logInterceptor(s *Server) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+		start := time.Now()
 		var x_real_ip, traceId, path, params, method string
 		var md metadata.MD
 		var ok bool
@@ -195,6 +196,9 @@ func logInterceptor(s *Server) grpc.UnaryServerInterceptor {
 		logger.Infof("receive grpc request")
 		ctx = context.WithValue(ctx, "logger", logger)
 		resp, err = handler(ctx, req)
+		logger = logger.WithFields(logrus.Fields{
+			"cost": time.Now().Sub(start).Seconds(),
+		})
 		if err != nil {
 			logger.Infof("grpc request failled | err: %s", err.Error())
 		} else {
