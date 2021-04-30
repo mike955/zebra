@@ -5,22 +5,21 @@ import (
 	"errors"
 
 	flake_pb "github.com/mike955/zebra/api/flake"
+	"github.com/mike955/zebra/email/configs"
 	"github.com/mike955/zebra/email/internal/dao"
-	"github.com/mike955/zebra/email/internal/rpc"
+	"github.com/mike955/zebra/pkg/transform/grpc"
 	"github.com/sirupsen/logrus"
 )
 
 type EmailData struct {
 	logger *logrus.Entry
 	dao    *dao.EmailDao
-	rpc    *rpc.Rpc
 }
 
 func NewEmailData(logger *logrus.Entry) *EmailData {
 	return &EmailData{
 		logger: logger,
 		dao:    dao.NewEmailDao(),
-		rpc:    rpc.NewRpc(),
 	}
 }
 
@@ -40,7 +39,13 @@ func (s *EmailData) Get(ctx context.Context, emailName string) (email dao.Email,
 	if len(emails) != 0 {
 		return emails[0], nil
 	}
-	flakeRes, err := s.rpc.Flake.New(ctx, &flake_pb.NewRequest{})
+	flakeRpc, err := grpc.NewFlakeRpc(configs.GlobalConfig.Rpc.FlakeAddr)
+	if err != nil {
+		s.logger.Errorf("app:email|data:cellphone|func:get|info:create flake client error|params:%+d|error:%s", configs.GlobalConfig.Rpc.FlakeAddr, err.Error())
+		err = errors.New("flake rpc call error")
+		return
+	}
+	flakeRes, err := flakeRpc.New(ctx, &flake_pb.NewRequest{})
 	if err != nil || flakeRes.Data == 0 {
 		s.logger.Errorf("app:email|service:email|layer:data|func:get|info:call falke.New error|params:%+d|error:%s", email, err.Error())
 		err = errors.New("create id error")

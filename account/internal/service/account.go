@@ -26,6 +26,8 @@ func (s *AccountService) Get(ctx context.Context, req *pb.GetRequest) (response 
 	if logger := ctx.Value("logger"); logger != nil {
 		s.logger = logger.(*logrus.Entry)
 		s.data.SetLogger(logger.(*logrus.Entry))
+	} else {
+		ctx = context.WithValue(ctx, "logger", s.logger)
 	}
 	response = new(pb.GetResponse)
 	accounts, err := s.data.Get(ctx, req.Username, req.Password)

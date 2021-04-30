@@ -6,9 +6,10 @@ import (
 	"sync"
 
 	"github.com/mike955/zebra/pkg/ecrypto"
+	"github.com/mike955/zebra/pkg/transform/grpc"
 
+	"github.com/mike955/zebra/account/configs"
 	"github.com/mike955/zebra/account/internal/dao"
-	"github.com/mike955/zebra/account/internal/rpc"
 
 	age_pb "github.com/mike955/zebra/api/age"
 
@@ -22,7 +23,6 @@ import (
 type AccountData struct {
 	logger *logrus.Entry
 	dao    *dao.AccountDao
-	rpc    *rpc.Rpc
 }
 
 // data handle logic
@@ -30,7 +30,6 @@ func NewAccountData(logger *logrus.Entry) *AccountData {
 	return &AccountData{
 		logger: logger,
 		dao:    dao.NewAccountDao(),
-		rpc:    rpc.NewRpc(),
 	}
 }
 
@@ -39,8 +38,6 @@ func (s *AccountData) SetLogger(logger *logrus.Entry) {
 }
 
 func (s *AccountData) Get(ctx context.Context, username, password string) (accounts []dao.Account, err error) {
-	// ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	// defer cancel()
 	if username == "" {
 		username = ecrypto.GenerateRandomString(16)
 	}
@@ -75,15 +72,16 @@ func (s *AccountData) Get(ctx context.Context, username, password string) (accou
 	go func(ctx context.Context) {
 		defer wg.Done()
 		var err error
-		flakeRes, err := s.rpc.Flake.New(ctx, &flake_pb.NewRequest{})
-		if err != nil || flakeRes.Data == 0 {
-			s.logger.Errorf("app:account|data:account|func:get|info:call falke.New error|params:%+v|error:%s", username, err.Error())
-			errs = append(errs, errors.New("get id error"))
+		flakeRpc, err := grpc.NewFlakeRpc(configs.GlobalConfig.Rpc.FlakeAddr)
+		if err != nil {
+			s.logger.Errorf("app:account|data:account|func:get|info:create flake client error|params:%+d|error:%s", configs.GlobalConfig.Rpc.FlakeAddr, err.Error())
+			errs = append(errs, errors.New("flake rpc call error"))
 			return
 		}
-		if flakeRes.Code != 0 {
-			s.logger.Errorf("app:account|data:account|func:get|info:call falke.New code error|params:%+v|error:%s|response:%+v", username, err.Error(), flakeRes)
-			errs = append(errs, errors.New("get id code error"))
+		flakeRes, err := flakeRpc.New(ctx, &flake_pb.NewRequest{})
+		if err != nil || flakeRes.Code == 0 {
+			s.logger.Errorf("app:account|data:account|func:get|info:call falke.New error|params:%+v|error:%s", username, err.Error())
+			errs = append(errs, errors.New("get id error"))
 			return
 		}
 		flake = flakeRes
@@ -92,15 +90,16 @@ func (s *AccountData) Get(ctx context.Context, username, password string) (accou
 	// age
 	go func(ctx context.Context) {
 		defer wg.Done()
-		ageRes, err := s.rpc.Age.Get(ctx, &age_pb.GetRequest{})
+		ageRpc, err := grpc.NewAgeRpc(configs.GlobalConfig.Rpc.AgeAddr)
 		if err != nil {
-			s.logger.Errorf("app:account|data:account|func:get|info:call age.Get error|params:%+v|error:%s", nil, err.Error())
-			errs = append(errs, errors.New("get age id error"))
+			s.logger.Errorf("app:account|data:account|func:get|info:create flake client error|params:%+d|error:%s", configs.GlobalConfig.Rpc.FlakeAddr, err.Error())
+			errs = append(errs, errors.New("ageRpc rpc call error"))
 			return
 		}
-		if ageRes.Code != 0 {
-			s.logger.Errorf("app:account|data:account|func:get|info:call age.Get code error|params:%+v|error:%s|response:%+v", username, err.Error(), ageRes)
-			errs = append(errs, errors.New("get age code error"))
+		ageRes, err := ageRpc.Get(ctx, &age_pb.GetRequest{})
+		if err != nil || ageRes.Code != 0 {
+			s.logger.Errorf("app:account|data:account|func:get|info:call age.Get error|params:%+v|error:%s", nil, err.Error())
+			errs = append(errs, errors.New("get age id error"))
 			return
 		}
 		age = ageRes
@@ -109,15 +108,16 @@ func (s *AccountData) Get(ctx context.Context, username, password string) (accou
 	// // email
 	go func(ctx context.Context) {
 		defer wg.Done()
-		emailRes, err := s.rpc.Email.Get(ctx, &email_pb.GetRequest{})
+		emailRpc, err := grpc.NewEmailRpc(configs.GlobalConfig.Rpc.EmailAddr)
 		if err != nil {
-			s.logger.Errorf("app:account|data:account|func:get|info:call email.Get error|params:%+v|error:%s", username, err.Error())
-			errs = append(errs, errors.New("get email error"))
+			s.logger.Errorf("app:account|data:account|func:get|info:create flake client error|params:%+d|error:%s", configs.GlobalConfig.Rpc.FlakeAddr, err.Error())
+			errs = append(errs, errors.New("ageRpc rpc call error"))
 			return
 		}
-		if emailRes.Code != 0 {
-			s.logger.Errorf("app:account|data:account|func:get|info:call email.Get code error|params:%+v|error:%s|response:%+v", username, err.Error(), emailRes)
-			errs = append(errs, errors.New("get email code error"))
+		emailRes, err := emailRpc.Get(ctx, &email_pb.GetRequest{})
+		if err != nil || emailRes.Code != 0 {
+			s.logger.Errorf("app:account|data:account|func:get|info:call email.Get error|params:%+v|error:%s", username, err.Error())
+			errs = append(errs, errors.New("get email error"))
 			return
 		}
 		email = emailRes
@@ -126,15 +126,16 @@ func (s *AccountData) Get(ctx context.Context, username, password string) (accou
 	// bank
 	go func(ctx context.Context) {
 		defer wg.Done()
-		bankRes, err := s.rpc.Bank.Get(ctx, &bank_pb.GetRequest{})
+		bankRpc, err := grpc.NewBankRpc(configs.GlobalConfig.Rpc.BankAddr)
 		if err != nil {
-			s.logger.Errorf("app:account|data:account|func:get|info:call bank.Get error|params:%+v|error:%s", username, err.Error())
-			errs = append(errs, errors.New("get bank error"))
+			s.logger.Errorf("app:account|data:account|func:get|info:create flake client error|params:%+d|error:%s", configs.GlobalConfig.Rpc.FlakeAddr, err.Error())
+			errs = append(errs, errors.New("ageRpc rpc call error"))
 			return
 		}
-		if bankRes.Code != 0 {
-			s.logger.Errorf("app:account|data:account|func:get|info:call bank.Get code error|params:%+v|error:%s|response:%+v", username, err.Error(), bankRes)
-			errs = append(errs, errors.New("get email code error"))
+		bankRes, err := bankRpc.Get(ctx, &bank_pb.GetRequest{})
+		if err != nil || bankRes.Code != 0 {
+			s.logger.Errorf("app:account|data:account|func:get|info:call bank.Get error|params:%+v|error:%s", username, err.Error())
+			errs = append(errs, errors.New("get bank error"))
 			return
 		}
 		bank = bankRes
@@ -143,15 +144,16 @@ func (s *AccountData) Get(ctx context.Context, username, password string) (accou
 	// cellphone
 	go func(ctx context.Context) {
 		defer wg.Done()
-		cellphoneRes, err := s.rpc.Cellphone.Get(ctx, &cellphone_pb.GetRequest{})
+		cellphoneRpc, err := grpc.NewCellphoneRpc(configs.GlobalConfig.Rpc.CellphoneAddr)
 		if err != nil {
-			s.logger.Errorf("app:account|data:account|func:get|info:call cellphone.Get error|params:%+v|error:%s", username, err.Error())
-			errs = append(errs, errors.New("get bank error"))
+			s.logger.Errorf("app:account|data:account|func:get|info:create flake client error|params:%+d|error:%s", configs.GlobalConfig.Rpc.FlakeAddr, err.Error())
+			errs = append(errs, errors.New("ageRpc rpc call error"))
 			return
 		}
-		if cellphoneRes.Code != 0 {
-			s.logger.Errorf("app:account|data:account|func:get|info:call cellphone.Get code error|params:%+v|error:%s|response:%+v", username, err.Error(), cellphone)
-			errs = append(errs, errors.New("get email code error"))
+		cellphoneRes, err := cellphoneRpc.Get(ctx, &cellphone_pb.GetRequest{})
+		if err != nil || cellphoneRes.Code != 0 {
+			s.logger.Errorf("app:account|data:account|func:get|info:call cellphone.Get error|params:%+v|error:%s", username, err.Error())
+			errs = append(errs, errors.New("get bank error"))
 			return
 		}
 		cellphone = cellphoneRes

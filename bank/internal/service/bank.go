@@ -29,6 +29,8 @@ func (s *BankService) Get(ctx context.Context, request *pb.GetRequest) (response
 	if logger := ctx.Value("logger"); logger != nil {
 		s.logger = logger.(*logrus.Entry)
 		s.data.SetLogger(logger.(*logrus.Entry))
+	} else {
+		ctx = context.WithValue(ctx, "logger", s.logger)
 	}
 	if request.Bank == 0 {
 		request.Bank = ecrypto.GenerateRandomUint64()

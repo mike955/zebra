@@ -195,6 +195,9 @@ func logInterceptor(s *Server) grpc.UnaryServerInterceptor {
 		})
 		logger.Infof("receive grpc request")
 		ctx = context.WithValue(ctx, "logger", logger)
+		ctx = context.WithValue(ctx, "x_real_ip", x_real_ip)
+		ctx = context.WithValue(ctx, "traceId", traceId)
+		ctx = context.WithValue(ctx, "md", md)
 		resp, err = handler(ctx, req)
 		logger = logger.WithFields(logrus.Fields{
 			"cost": time.Now().Sub(start).Seconds(),

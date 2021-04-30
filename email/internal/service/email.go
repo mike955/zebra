@@ -29,6 +29,8 @@ func (s *EmailService) Get(ctx context.Context, request *pb.GetRequest) (respons
 	if logger := ctx.Value("logger"); logger != nil {
 		s.logger = logger.(*logrus.Entry)
 		s.data.SetLogger(logger.(*logrus.Entry))
+	} else {
+		ctx = context.WithValue(ctx, "logger", s.logger)
 	}
 	if request.Email == "" {
 		request.Email = ecrypto.GenerateRandomString(50) + "@zebra.com"

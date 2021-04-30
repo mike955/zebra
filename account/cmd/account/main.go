@@ -32,7 +32,6 @@ func init() {
 }
 
 func main() {
-	// flag.Parse()
 	if version == true {
 		fmt.Println("BuildTime: ", BuildTime)
 		fmt.Println("GitCommitID: ", GitCommitID)
@@ -41,9 +40,6 @@ func main() {
 		fmt.Println("GitCommitID: ", BuildTime)
 		return
 	}
-	// if conf == "" {
-	// 	panic("not found config file, use: -f config.yaml")
-	// }
 
 	grpcServe := server.NewGRPCServer(conf)
 	if err := server.RunGRPCServer(grpcServe); err != nil {
