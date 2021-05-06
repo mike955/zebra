@@ -1,4 +1,5 @@
 server:
+  app_name: "flake"
   grpc_addr: "0.0.0.0:5180"
   prometheus_addr: "0.0.0.0:5181"
   machine_id: 10001

@@ -1,4 +1,5 @@
 server:
+  app_name: "bank"
   grpc_addr: "0.0.0.0:5580"
   prometheus_addr: "0.0.0.0:5581"
   timeout: 10

@@ -4,15 +4,21 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
+	"os/signal"
 	"runtime"
+	"syscall"
 	"time"
 
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/reflection"
 
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
@@ -27,7 +33,12 @@ type Server struct {
 	timeout  time.Duration
 	grpcOpts []grpc.ServerOption
 
-	Logger *logrus.Logger
+	Logger *logrus.Entry
+
+	prometheusEnableHandlingTimeHistogram bool
+	prometheusAddr                        string
+	reflectionStatus                      bool
+	healthCheckStatus                     bool
 }
 
 // Network with server network.
@@ -51,21 +62,36 @@ func Timeout(timeout time.Duration) ServerOption {
 	}
 }
 
-func Logger(logger *logrus.Logger) ServerOption {
+func Logger(logger *logrus.Entry) ServerOption {
 	return func(s *Server) {
 		s.Logger = logger
 	}
 }
 
-func GrpcOpts(opts ...grpc.ServerOption) ServerOption {
+func Prometheus(enableHandlingTimeHistogram bool, prometheusAddr string) ServerOption {
 	return func(s *Server) {
-		//s.grpcOpts = append(s.grpcOpts, opts...)
-		s.grpcOpts = opts
+		s.prometheusEnableHandlingTimeHistogram = enableHandlingTimeHistogram
+		s.prometheusAddr = prometheusAddr
 	}
 }
 
-func GrpcHealthCheck(s *grpc.Server) {
-	grpc_health_v1.RegisterHealthServer(s, health.NewServer())
+func Reflection() ServerOption {
+	return func(s *Server) {
+		s.reflectionStatus = true
+	}
+}
+
+func HealthCheck() ServerOption {
+	return func(s *Server) {
+		s.healthCheckStatus = true
+	}
+}
+
+func GrpcOpts(opts ...grpc.ServerOption) ServerOption {
+	return func(s *Server) {
+		// s.grpcOpts = append(s.grpcOpts, opts...)
+		s.grpcOpts = opts
+	}
 }
 
 func GrpcKeepAlive(kp keepalive.ServerParameters) ServerOption {
@@ -98,13 +124,16 @@ func NewServer(app string, opts ...ServerOption) *Server {
 		network:  "tcp",
 		address:  ":5080",
 		timeout:  time.Second,
-		Logger:   defaultLogger(),
+		Logger:   defaultLogger().WithFields(logrus.Fields{"app": app}),
 		grpcOpts: []grpc.ServerOption{},
 	}
 	for _, o := range opts {
 		o(srv)
 	}
 	srv.Server = grpc.NewServer(srv.grpcOpts...)
+	srv.prometheus()
+	srv.reflection()
+	srv.healthCheck()
 	return srv
 }
 
@@ -113,6 +142,17 @@ func (s *Server) Start() error {
 	if err != nil {
 		return err
 	}
+	if s.prometheusAddr != "" {
+		go func() {
+			s.Logger.Infof("prometheus listening on %s", s.prometheusAddr)
+			if err := http.ListenAndServe(s.prometheusAddr, promhttp.Handler()); err != nil {
+				panic("prometheus start error: " + err.Error())
+			}
+		}()
+	}
+	go func() {
+		s.handleGRPCServerSignals()
+	}()
 	s.Logger.Infof("grpc server listening on: %s", lis.Addr().String())
 	return s.Server.Serve(lis)
 }
@@ -122,6 +162,49 @@ func (s *Server) Stop() error {
 	s.Server.GracefulStop()
 	s.Logger.Info("grpc server stopping")
 	return nil
+}
+
+func (s *Server) prometheus() {
+	if s.prometheusEnableHandlingTimeHistogram {
+		grpc_prometheus.EnableHandlingTimeHistogram()
+	}
+	if s.prometheusAddr != "" {
+		grpc_prometheus.Register(s.Server)
+	}
+}
+
+func (s *Server) reflection() {
+	if s.reflectionStatus {
+		reflection.Register(s.Server)
+	}
+}
+
+func (s *Server) healthCheck() {
+	if s.healthCheckStatus {
+		grpc_health_v1.RegisterHealthServer(s.Server, health.NewServer())
+	}
+}
+
+func (s *Server) handleGRPCServerSignals() {
+	signalCh := make(chan os.Signal, 1)
+	signal.Notify(signalCh, syscall.SIGUSR1, syscall.SIGUSR2, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGQUIT, os.Interrupt) // stop process
+
+	s.Logger.Info("listen quit signal ...")
+	select {
+	case signal := <-signalCh:
+		switch signal {
+		case syscall.SIGUSR1, syscall.SIGUSR2, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGQUIT, os.Interrupt:
+			s.Logger.Infof("stopping process on %s signal", fmt.Sprintf("%s", signal))
+			if err := s.Stop(); err != nil {
+				s.Logger.Errorf(fmt.Sprintf("quit process error|error:%s", err.Error()))
+				os.Exit(1)
+			}
+			s.Logger.Infof(fmt.Sprintf("quit process"))
+			os.Exit(1)
+		default:
+			os.Exit(1)
+		}
+	}
 }
 
 func defaultLogger() (logger *logrus.Logger) {
@@ -139,7 +222,7 @@ func defaultGrpcOpt(s *Server) (opt grpc.ServerOption) {
 	)
 }
 
-func recoveryInterceptor(logger *logrus.Logger) grpc.UnaryServerInterceptor {
+func recoveryInterceptor(logger *logrus.Entry) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 		defer func() {
 			if rerr := recover(); rerr != nil {
@@ -154,7 +237,7 @@ func recoveryInterceptor(logger *logrus.Logger) grpc.UnaryServerInterceptor {
 	}
 }
 
-func timeoutInterceptor(logger *logrus.Logger) grpc.UnaryServerInterceptor {
+func timeoutInterceptor(logger *logrus.Entry) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(ctx, time.Second*60)

@@ -32,7 +32,6 @@ func init() {
 }
 
 func main() {
-	// flag.Parse()
 	if version == true {
 		fmt.Println("BuildTime: ", BuildTime)
 		fmt.Println("GitCommitID: ", GitCommitID)
