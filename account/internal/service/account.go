@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/mike955/zebra/account/internal/data"
 	pb "github.com/mike955/zebra/api/account"
@@ -37,8 +36,6 @@ func (s *AccountService) Get(ctx context.Context, req *pb.GetRequest) (response 
 		response.Msg = "get account error"
 		return
 	}
-	fmt.Println("____________")
-	fmt.Println(accounts)
 	response.Data = &pb.Account{
 		Id:        accounts[0].Id,
 		Username:  accounts[0].Username,

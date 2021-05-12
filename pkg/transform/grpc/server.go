@@ -189,17 +189,17 @@ func (s *Server) handleGRPCServerSignals() {
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, syscall.SIGUSR1, syscall.SIGUSR2, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGQUIT, os.Interrupt) // stop process
 
-	s.Logger.Info("listen quit signal ...")
+	s.Logger.Info("listen grpc quit signal ...")
 	select {
 	case signal := <-signalCh:
 		switch signal {
 		case syscall.SIGUSR1, syscall.SIGUSR2, syscall.SIGHUP, syscall.SIGTERM, syscall.SIGQUIT, os.Interrupt:
-			s.Logger.Infof("stopping process on %s signal", fmt.Sprintf("%s", signal))
+			s.Logger.Infof("stopping grpc process on %s signal", fmt.Sprintf("%s", signal))
 			if err := s.Stop(); err != nil {
-				s.Logger.Errorf(fmt.Sprintf("quit process error|error:%s", err.Error()))
+				s.Logger.Errorf(fmt.Sprintf("quit grpc process error|error:%s", err.Error()))
 				os.Exit(1)
 			}
-			s.Logger.Infof(fmt.Sprintf("quit process"))
+			s.Logger.Infof(fmt.Sprintf("quit grpc  process"))
 			os.Exit(1)
 		default:
 			os.Exit(1)

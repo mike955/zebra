@@ -29,7 +29,7 @@ cellphone
 
 protoc --proto_path=./api/.  --go-grpc_out=./api/ --go_out=./api/ flake.proto
 
-protoc --proto_path=./api/.  --go-grpc_out=./api/ --go_out=./api/ account.proto
+protoc --proto_path=./api/.  --go-grpc_out=./api/ --go-http-zebra_out=./api/ --go_out=./api/ account.proto
 
 protoc --proto_path=./api/.  --go-grpc_out=./api/ --go_out=./api/ age.proto
 
@@ -41,6 +41,7 @@ protoc --proto_path=./api/.  --go-grpc_out=./api/ --go_out=./api/ cellphone.prot
 
 
 
+protoc --proto_path=./api/.  --go-grpc_out=./api/ --go-http-zebra_out=./api/  --go_out=./api/ flake.proto
 
 
 

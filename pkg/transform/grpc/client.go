@@ -18,10 +18,7 @@ import (
 
 var gRPCClientMap sync.Map
 
-// var gRPCClientMap = map[string]interface{}{}
-
 func NewFlakeRpc(flakeAddr string) (flake_pb.FlakeServiceClient, error) {
-	// if gRPCClientMap["flake"] == nil {
 	if _, ok := gRPCClientMap.Load("flake"); !ok {
 		if os.Getenv("FlAKE_ADDR") != "" {
 			flakeAddr = os.Getenv("FlAKE_ADDR")
@@ -37,7 +34,6 @@ func NewFlakeRpc(flakeAddr string) (flake_pb.FlakeServiceClient, error) {
 }
 
 func NewAgeRpc(ageAddr string) (age_pb.AgeServiceClient, error) {
-	// if gRPCClientMap["age"] == nil {
 	if _, ok := gRPCClientMap.Load("age"); !ok {
 		if os.Getenv("AGE_ADDR") != "" {
 			ageAddr = os.Getenv("AGE_ADDR")
@@ -54,7 +50,6 @@ func NewAgeRpc(ageAddr string) (age_pb.AgeServiceClient, error) {
 
 func NewEmailRpc(emailAddr string) (email_pb.EmailServiceClient, error) {
 	if _, ok := gRPCClientMap.Load("email"); !ok {
-		// if gRPCClientMap["email"] == nil {
 		if os.Getenv("EMAIL_ADDR") != "" {
 			emailAddr = os.Getenv("EMAIL_ADDR")
 		}
@@ -69,7 +64,6 @@ func NewEmailRpc(emailAddr string) (email_pb.EmailServiceClient, error) {
 }
 
 func NewBankRpc(bankAddr string) (bank_pb.BankServiceClient, error) {
-	// if gRPCClientMap["bank"] == nil {
 	if _, ok := gRPCClientMap.Load("bank"); !ok {
 		if os.Getenv("BANK_ADDR") != "" {
 			bankAddr = os.Getenv("BANK_ADDR")
@@ -85,7 +79,6 @@ func NewBankRpc(bankAddr string) (bank_pb.BankServiceClient, error) {
 }
 
 func NewCellphoneRpc(cellphoneAddr string) (cellphone_pb.CellphoneServiceClient, error) {
-	// if gRPCClientMap["cellphone"] == nil {
 	if _, ok := gRPCClientMap.Load("cellphone"); !ok {
 		if os.Getenv("CELLPHONE_ADDR") != "" {
 			cellphoneAddr = os.Getenv("CELLPHONE_ADDR")

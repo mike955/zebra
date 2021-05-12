@@ -3,7 +3,6 @@ package data
 import (
 	"context"
 	"errors"
-	"fmt"
 	"sync"
 
 	"github.com/mike955/zebra/pkg/ecrypto"
@@ -180,8 +179,6 @@ func (s *AccountData) Get(ctx context.Context, username, password string) (accou
 	newAccount.Salt = ecrypto.GenerateRandomHex(64)
 	newAccount.Password = ecrypto.GeneratePassword(password, newAccount.Salt)
 
-	fmt.Println("=================")
-	fmt.Printf("%+v \n", newAccount)
 	err = s.dao.Create(newAccount)
 	return []dao.Account{newAccount}, nil
 }
