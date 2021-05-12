@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-	configs "github.com/mike955/zebra/flake/configs"
+	"github.com/mike955/zebra/flake/configs"
 	"github.com/mike955/zebra/flake/internal/data"
 	"github.com/mike955/zebra/flake/internal/service"
 	"github.com/mike955/zebra/pkg/transform/grpc"
@@ -16,7 +16,7 @@ import (
 	pb "github.com/mike955/zebra/api/flake"
 )
 
-func NewGRPCServer(conf string) (server *grpc.Server) {
+func NewGRPCServer() (server *grpc.Server) {
 	config := configs.GlobalConfig.Server
 	var opts = []grpc.ServerOption{
 		grpc.Address(config.GRPCAddr),
@@ -24,7 +24,7 @@ func NewGRPCServer(conf string) (server *grpc.Server) {
 		grpc.GrpcUnaryServerInterceptor(grpc_prometheus.UnaryServerInterceptor),
 		grpc.GrpcDefaultUnaryServerInterceptor(),
 
-		grpc.Prometheus(true, configs.GlobalConfig.Server.PrometheusAddr),
+		grpc.Prometheus(true, configs.GlobalConfig.Server.HttpAddr),
 		grpc.Reflection(),
 		grpc.HealthCheck(),
 	}

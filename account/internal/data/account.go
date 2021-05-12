@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/mike955/zebra/pkg/ecrypto"
@@ -79,7 +80,7 @@ func (s *AccountData) Get(ctx context.Context, username, password string) (accou
 			return
 		}
 		flakeRes, err := flakeRpc.New(ctx, &flake_pb.NewRequest{})
-		if err != nil || flakeRes.Code == 0 {
+		if err != nil || flakeRes.Code != 0 {
 			s.logger.Errorf("app:account|data:account|func:get|info:call falke.New error|params:%+v|error:%s", username, err.Error())
 			errs = append(errs, errors.New("get id error"))
 			return
@@ -178,6 +179,9 @@ func (s *AccountData) Get(ctx context.Context, username, password string) (accou
 	newAccount.Username = username
 	newAccount.Salt = ecrypto.GenerateRandomHex(64)
 	newAccount.Password = ecrypto.GeneratePassword(password, newAccount.Salt)
+
+	fmt.Println("=================")
+	fmt.Printf("%+v \n", newAccount)
 	err = s.dao.Create(newAccount)
 	return []dao.Account{newAccount}, nil
 }

@@ -11,8 +11,8 @@ type Global struct {
 }
 
 type server struct {
-	AppName        string        `yaml:"app_name"`
-	GRPCAddr       string        `yaml:"grpc_addr"`
-	PrometheusAddr string        `yaml:"prometheus_addr"`
-	Timeout        time.Duration `yaml:"timeout"`
+	AppName  string        `yaml:"app_name"`
+	GRPCAddr string        `yaml:"grpc_addr"`
+	HttpAddr string        `yaml:"http_addr"`
+	Timeout  time.Duration `yaml:"timeout"`
 }

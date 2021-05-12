@@ -41,8 +41,15 @@ func main() {
 		return
 	}
 
-	grpcServe := server.NewGRPCServer(conf)
-	if err := server.RunGRPCServer(grpcServe); err != nil {
-		grpcServe.Logger.Errorf("grpc server run error:%s", err.Error())
+	go func() {
+		grpcServe := server.NewGRPCServer()
+		if err := server.RunGRPCServer(grpcServe); err != nil {
+			grpcServe.Logger.Errorf("grpc server run error:%s", err.Error())
+		}
+	}()
+
+	httpServer := server.NewHTTPServer()
+	if err := server.RunHTTPServer(httpServer); err != nil {
+
 	}
 }

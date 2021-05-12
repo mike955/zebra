@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"os"
+	"sync"
 	"time"
 
 	age_pb "github.com/mike955/zebra/api/age"
@@ -15,10 +16,13 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-var gRPCClientMap = map[string]interface{}{}
+var gRPCClientMap sync.Map
 
-func NewFlakeRpc(flakeAddr string) (client flake_pb.FlakeServiceClient, err error) {
-	if gRPCClientMap["flake"] == nil {
+// var gRPCClientMap = map[string]interface{}{}
+
+func NewFlakeRpc(flakeAddr string) (flake_pb.FlakeServiceClient, error) {
+	// if gRPCClientMap["flake"] == nil {
+	if _, ok := gRPCClientMap.Load("flake"); !ok {
 		if os.Getenv("FlAKE_ADDR") != "" {
 			flakeAddr = os.Getenv("FlAKE_ADDR")
 		}
@@ -26,14 +30,15 @@ func NewFlakeRpc(flakeAddr string) (client flake_pb.FlakeServiceClient, err erro
 		if err != nil {
 			return nil, err
 		}
-		gRPCClientMap["flake"] = flake_pb.NewFlakeServiceClient(conn)
+		gRPCClientMap.Store("flake", flake_pb.NewFlakeServiceClient(conn))
 	}
-	client = gRPCClientMap["flake"].(flake_pb.FlakeServiceClient)
-	return
+	client, _ := gRPCClientMap.Load("flake")
+	return client.(flake_pb.FlakeServiceClient), nil
 }
 
-func NewAgeRpc(ageAddr string) (client age_pb.AgeServiceClient, err error) {
-	if gRPCClientMap["age"] == nil {
+func NewAgeRpc(ageAddr string) (age_pb.AgeServiceClient, error) {
+	// if gRPCClientMap["age"] == nil {
+	if _, ok := gRPCClientMap.Load("age"); !ok {
 		if os.Getenv("AGE_ADDR") != "" {
 			ageAddr = os.Getenv("AGE_ADDR")
 		}
@@ -41,15 +46,15 @@ func NewAgeRpc(ageAddr string) (client age_pb.AgeServiceClient, err error) {
 		if err != nil {
 			return nil, err
 		}
-		client = age_pb.NewAgeServiceClient(conn)
-		gRPCClientMap["age"] = client
+		gRPCClientMap.Store("age", age_pb.NewAgeServiceClient(conn))
 	}
-	client = gRPCClientMap["age"].(age_pb.AgeServiceClient)
-	return
+	client, _ := gRPCClientMap.Load("age")
+	return client.(age_pb.AgeServiceClient), nil
 }
 
-func NewEmailRpc(emailAddr string) (client email_pb.EmailServiceClient, err error) {
-	if gRPCClientMap["email"] == nil {
+func NewEmailRpc(emailAddr string) (email_pb.EmailServiceClient, error) {
+	if _, ok := gRPCClientMap.Load("email"); !ok {
+		// if gRPCClientMap["email"] == nil {
 		if os.Getenv("EMAIL_ADDR") != "" {
 			emailAddr = os.Getenv("EMAIL_ADDR")
 		}
@@ -57,15 +62,15 @@ func NewEmailRpc(emailAddr string) (client email_pb.EmailServiceClient, err erro
 		if err != nil {
 			return nil, err
 		}
-		client = email_pb.NewEmailServiceClient(conn)
-		gRPCClientMap["email"] = client
+		gRPCClientMap.Store("email", email_pb.NewEmailServiceClient(conn))
 	}
-	client = gRPCClientMap["email"].(email_pb.EmailServiceClient)
-	return
+	client, _ := gRPCClientMap.Load("email")
+	return client.(email_pb.EmailServiceClient), nil
 }
 
-func NewBankRpc(bankAddr string) (client bank_pb.BankServiceClient, err error) {
-	if gRPCClientMap["bank"] == nil {
+func NewBankRpc(bankAddr string) (bank_pb.BankServiceClient, error) {
+	// if gRPCClientMap["bank"] == nil {
+	if _, ok := gRPCClientMap.Load("bank"); !ok {
 		if os.Getenv("BANK_ADDR") != "" {
 			bankAddr = os.Getenv("BANK_ADDR")
 		}
@@ -73,15 +78,15 @@ func NewBankRpc(bankAddr string) (client bank_pb.BankServiceClient, err error) {
 		if err != nil {
 			return nil, err
 		}
-		client = bank_pb.NewBankServiceClient(conn)
-		gRPCClientMap["bank"] = client
+		gRPCClientMap.Store("bank", bank_pb.NewBankServiceClient(conn))
 	}
-	client = gRPCClientMap["bank"].(bank_pb.BankServiceClient)
-	return
+	client, _ := gRPCClientMap.Load("bank")
+	return client.(bank_pb.BankServiceClient), nil
 }
 
-func NewCellphoneRpc(cellphoneAddr string) (client cellphone_pb.CellphoneServiceClient, err error) {
-	if gRPCClientMap["cellphone"] == nil {
+func NewCellphoneRpc(cellphoneAddr string) (cellphone_pb.CellphoneServiceClient, error) {
+	// if gRPCClientMap["cellphone"] == nil {
+	if _, ok := gRPCClientMap.Load("cellphone"); !ok {
 		if os.Getenv("CELLPHONE_ADDR") != "" {
 			cellphoneAddr = os.Getenv("CELLPHONE_ADDR")
 		}
@@ -89,11 +94,10 @@ func NewCellphoneRpc(cellphoneAddr string) (client cellphone_pb.CellphoneService
 		if err != nil {
 			return nil, err
 		}
-		client = cellphone_pb.NewCellphoneServiceClient(conn)
-		gRPCClientMap["cellphone"] = client
+		gRPCClientMap.Store("cellphone", cellphone_pb.NewCellphoneServiceClient(conn))
 	}
-	client = gRPCClientMap["cellphone"].(cellphone_pb.CellphoneServiceClient)
-	return
+	client, _ := gRPCClientMap.Load("cellphone")
+	return client.(cellphone_pb.CellphoneServiceClient), nil
 }
 
 func CllentUnaryInterceptor(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {

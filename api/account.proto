@@ -1,12 +1,24 @@
 syntax = "proto3";
 package account;
 
+import "third_party/google/api/annotations.proto";
 
 option go_package = "/account";
 
 service AccountService {
-  rpc Get (GetRequest) returns (GetResponse);
-  rpc Auth (AuthRequest) returns (AuthResponse);
+  rpc Get (GetRequest) returns (GetResponse){
+    option (google.api.http) = {
+      post: "/account/new",
+      body: "*"
+    };
+  }
+
+  rpc Auth (AuthRequest) returns (AuthResponse){
+    option (google.api.http) = {
+      post: "/account/auth",
+      body: "*"
+    };
+  }
 }
 
 message GetRequest {

@@ -1,7 +1,7 @@
 server:
   app_name: "email"
   grpc_addr: "0.0.0.0:5480"
-  prometheus_addr: "0.0.0.0:5481"
+  http_addr: "0.0.0.0:5481" # for http server & prometheus & pprof
   timeout: 10
 mysql:
   mysql_addr: "10.175.7.193:3306"

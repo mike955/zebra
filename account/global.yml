@@ -1,7 +1,7 @@
 server:
   app_name: "account"
   grpc_addr: "0.0.0.0:5280"
-  prometheus_addr: "0.0.0.0:5281"
+  http_addr: "0.0.0.0:5281" # for http server & prometheus & pprof
   machine_id: 10002
   timeout: 10000000
 mysql:
@@ -10,8 +10,8 @@ mysql:
   mysql_password: "@Ussg3306"
   mysql_database: "zebra"
 rpc:
-  # flake_addr: "0.0.0.0:5180"
-  flake_addr: ${FLAKE_ADDR}
+  flake_addr: "0.0.0.0:5180"
+  # flake_addr: ${FLAKE_ADDR}
   age_addr: "0.0.0.0:5380"
   email_addr: "0.0.0.0:5480"
   bank_addr: "0.0.0.0:5580"

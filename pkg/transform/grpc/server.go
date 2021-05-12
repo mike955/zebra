@@ -144,7 +144,7 @@ func (s *Server) Start() error {
 	}
 	if s.prometheusAddr != "" {
 		go func() {
-			s.Logger.Infof("prometheus listening on %s", s.prometheusAddr)
+			s.Logger.Infof("http listening on %s", s.prometheusAddr)
 			if err := http.ListenAndServe(s.prometheusAddr, promhttp.Handler()); err != nil {
 				panic("prometheus start error: " + err.Error())
 			}
