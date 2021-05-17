@@ -10,7 +10,7 @@ import (
 	"github.com/mike955/zebra/account/internal/dao"
 	"github.com/mike955/zebra/account/internal/service"
 	pb "github.com/mike955/zebra/api/account"
-	"github.com/mike955/zebra/pkg/transform/grpc"
+	"github.com/mike955/zrpc/transform/grpc"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )

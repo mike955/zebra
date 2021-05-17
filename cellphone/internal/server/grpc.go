@@ -7,7 +7,7 @@ import (
 	configs "github.com/mike955/zebra/cellphone/configs"
 	"github.com/mike955/zebra/cellphone/internal/dao"
 	"github.com/mike955/zebra/cellphone/internal/service"
-	"github.com/mike955/zebra/pkg/transform/grpc"
+	"github.com/mike955/zrpc/transform/grpc"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 

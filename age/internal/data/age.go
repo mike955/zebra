@@ -6,8 +6,8 @@ import (
 
 	"github.com/mike955/zebra/age/configs"
 	"github.com/mike955/zebra/age/internal/dao"
+	"github.com/mike955/zebra/age/internal/rpc"
 	flake_pb "github.com/mike955/zebra/api/flake"
-	"github.com/mike955/zebra/pkg/transform/grpc"
 	"github.com/sirupsen/logrus"
 )
 
@@ -40,7 +40,7 @@ func (s *AgeData) Get(ctx context.Context, age uint64) (sage dao.Age, err error)
 	if len(sages) != 0 {
 		return sages[0], nil
 	}
-	flakeRpc, err := grpc.NewFlakeRpc(configs.GlobalConfig.Rpc.FlakeAddr)
+	flakeRpc, err := rpc.NewFlakeRpc(configs.GlobalConfig.Rpc.FlakeAddr)
 	if err != nil {
 		s.logger.Errorf("app:age|data:age|func:get|info:create flake client error|params:%+d|error:%s", configs.GlobalConfig.Rpc.FlakeAddr, err.Error())
 		err = errors.New("flake rpc call error")

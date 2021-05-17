@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/mike955/zebra/email/internal/data"
-	"github.com/mike955/zebra/pkg/ecrypto"
+	"github.com/mike955/zrpc/utils/ecrypto"
 	"github.com/sirupsen/logrus"
 
 	pb "github.com/mike955/zebra/api/email"

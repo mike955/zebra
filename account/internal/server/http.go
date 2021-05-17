@@ -4,7 +4,7 @@ import (
 	configs "github.com/mike955/zebra/account/configs"
 	"github.com/mike955/zebra/account/internal/service"
 	pb "github.com/mike955/zebra/api/account"
-	h "github.com/mike955/zebra/pkg/transform/http"
+	h "github.com/mike955/zrpc/transform/http"
 )
 
 func NewHTTPServer() (server *h.Server) {

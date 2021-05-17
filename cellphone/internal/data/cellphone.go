@@ -7,7 +7,7 @@ import (
 	flake_pb "github.com/mike955/zebra/api/flake"
 	"github.com/mike955/zebra/cellphone/configs"
 	"github.com/mike955/zebra/cellphone/internal/dao"
-	"github.com/mike955/zebra/pkg/transform/grpc"
+	"github.com/mike955/zebra/cellphone/internal/rpc"
 	"github.com/sirupsen/logrus"
 )
 
@@ -39,7 +39,7 @@ func (s *CellphoneData) Get(ctx context.Context, cellphone uint64) (cp dao.Cellp
 	if len(cps) != 0 {
 		return cps[0], nil
 	}
-	flakeRpc, err := grpc.NewFlakeRpc(configs.GlobalConfig.Rpc.FlakeAddr)
+	flakeRpc, err := rpc.NewFlakeRpc(configs.GlobalConfig.Rpc.FlakeAddr)
 	if err != nil {
 		s.logger.Errorf("app:cellphone|data:cellphone|func:get|info:create flake client error|params:%+d|error:%s", configs.GlobalConfig.Rpc.FlakeAddr, err.Error())
 		err = errors.New("flake rpc call error")
